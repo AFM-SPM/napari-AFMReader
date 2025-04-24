@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "napari-afmreader"
-description = "Napari plugin for TopoStats a suite of tools for working with Atomic Force Microscopy Images."
+description = "Napari plugin using AFMReader to load various Atomic Force Microscopy Images."
 readme = "README.md"
 license = {text = "GNU GPLv3 only"}
 dynamic = ["version"]
