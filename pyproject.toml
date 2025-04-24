@@ -1,0 +1,118 @@
+[build-system]
+requires = [
+  "setuptools>=45",
+  "wheel",
+  "setuptools_scm[toml]>=6.2"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "napari-afmreader"
+description = "Napari plugin for TopoStats a suite of tools for working with Atomic Force Microscopy Images."
+readme = "README.md"
+license = {text = "GNU GPLv3 only"}
+dynamic = ["version"]
+authors = [
+  {name = "TopoStats Team", email = "topostats@sheffield.ac.uk"},
+  {name = "Max Gamill", email = "mcgamill1@sheffield.ac.uk"},
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Framework :: napari",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Image Processing",
+]
+keywords = [
+  "afm",
+  "image processing",
+]
+requires-python = ">=3.8"
+dependencies = [
+  "afmreader",
+  "magicgui",
+  "napari[all]",
+  "qtpy",
+  "topostats",
+  "tox",
+]
+
+[project.optional-dependencies]
+tests = [
+  "pytest",
+  "pytest-cov",
+  "pytest-qt",
+  "qtpy",
+]
+dev = [
+  "black",
+  # "codespell",
+  "pre-commit",
+  "pylint",
+  "ruff",
+]
+
+[tool.setuptools_scm]
+write_to = "_version.py"
+
+[tool.black]
+line-length = 79
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+
+[tool.ruff]
+line-length = 79
+select = [
+    "E", "F", "W", #flake8
+    "UP", # pyupgrade
+    "I", # isort
+    "BLE", # flake8-blind-exception
+    "B", # flake8-bugbear
+    "A", # flake8-builtins
+    "C4", # flake8-comprehensions
+    "ISC", # flake8-implicit-str-concat
+    "G", # flake8-logging-format
+    "PIE", # flake8-pie
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501", # line too long. let black handle this
+    "UP006", "UP007", # type annotation. As using magicgui require runtime type annotation then we disable this.
+    "SIM117", # flake8-simplify - some of merged with statements are not looking great with black, reanble after drop python 3.9
+]
+
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".mypy_cache",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "*vendored*",
+    "*_vendor*",
+]
+
+target-version = "py38"
+fix = true
+
+#[project.entry-points."napari.manifest"]
+napari-afmreader = "napari-afmreader.napari.yaml"

@@ -1,0 +1,16 @@
+name: napari-afmreader
+display_name: AFMReader
+# use 'hidden' to remove plugin from napari hub search results
+visibility: public
+# see https://napari.org/stable/plugins/manifest.html for valid categories
+categories: ["Utilities"]
+contributions:
+  commands:
+    - id: napari-afmreader.get_reader
+      python_name: napari_afmreader._reader:napari_get_reader
+      title: Open AFM data with AFMReader
+
+  readers:
+    - command: napari-afmreader.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.spm', '*.jpk', '*.ibw', '*.gwy', '*.topostats']
