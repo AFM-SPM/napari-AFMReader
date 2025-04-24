@@ -54,7 +54,7 @@ tests = [
 ]
 dev = [
   "black",
-  # "codespell",
+  "codespell",
   "pre-commit",
   "pylint",
   "ruff",
