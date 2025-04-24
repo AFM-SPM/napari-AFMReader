@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 from qtpy.QtWidgets import QInputDialog
 from topostats import io
-#from AFMReader import general_loader
+from AFMReader import general_loader
 
 
 def napari_get_reader(path):
@@ -34,7 +34,7 @@ def napari_get_reader(path):
         path = path[0]
 
     # if we know we cannot read the file, we immediately return None.
-    if not path.endswith((".spm", ".jpk", ".ibw", ".gwy", ".topostats")):
+    if not path.endswith((".asd", ".gwy", ".ibw", ".jpk", ".spm", ".stp", ".top", ".topostats")):
         return None
 
     # otherwise we return the *function* that can read ``path``.
@@ -49,6 +49,66 @@ def napari_get_reader(path):
 
 
 def reader_function(path):
+    """Take a path or list of paths and return a list of LayerData tuples.
+
+    Readers are expected to return data as a list of tuples, where each tuple
+    is (data, [add_kwargs, [layer_type]]), "add_kwargs" and "layer_type" are
+    both optional.
+
+    Parameters
+    ----------
+    path : str or list of str
+        Path to file, or list of paths.
+
+    Returns
+    -------
+    layer_data : list of tuples
+        A list of LayerData tuples where each tuple in the list contains
+        (data, metadata, layer_type), where data is a numpy array, metadata is
+        a dict of keyword arguments for the corresponding viewer.add_* method
+        in napari, and layer_type is a lower-case string naming the type of
+        layer. Both "meta", and "layer_type" are optional. napari will
+        default to layer_type=="image" if not provided
+    """
+    # handle both a string and a list of strings
+    paths = [Path(path)] if isinstance(path, str) else Path(path)
+    # load all files into array
+    available_channels = None
+    while True:
+        #try:
+        if available_channels is None:
+            message = "Channel Name: "
+        else:
+            message = f"Available channels: {available_channels}"
+        # adds dialog box for channel input
+        user_input, ok = QInputDialog.getText(
+            None, "Input Channel", message
+        )
+        if not ok:
+            return None
+        loader = general_loader.LoadFile(paths[0], user_input)
+        image, px2nm = loader.load()
+        if px2nm is None:
+            available_channels = f"{image}."
+        else:
+            break
+        #except Exception as e:
+        #    available_channels = f"Check console error message: {e}."
+
+    # metadata should be the same for all images in a stack
+    metadata = {
+        "image_path": paths[0],
+        "px2nm": px2nm,
+    }
+
+    # optional kwargs for the corresponding viewer.add_* method
+    add_kwargs = {"metadata": metadata}
+
+    layer_type = "image"  # optional, default is "image"
+    return [(image, add_kwargs, layer_type)]
+
+
+def reader_function_og(path):
     """Take a path or list of paths and return a list of LayerData tuples.
 
     Readers are expected to return data as a list of tuples, where each tuple

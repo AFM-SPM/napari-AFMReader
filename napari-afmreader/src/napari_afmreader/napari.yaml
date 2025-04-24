@@ -13,4 +13,4 @@ contributions:
   readers:
     - command: napari-afmreader.get_reader
       accepts_directories: false
-      filename_patterns: ['*.spm', '*.jpk', '*.ibw', '*.gwy', '*.topostats']
+      filename_patterns: ['*.asd', '*.gwy', '*.ibw', '*.jpk', '*.spm', '*.stp', '*.top', '*.topostats']
