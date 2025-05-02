@@ -4,14 +4,13 @@ Use AFMReader to load Atomic Force Miscroscopy image files into Napari.
 
 from pathlib import Path
 
-from qtpy.QtWidgets import QInputDialog
+from qtpy.QtWidgets import QInputDialog  # pylint: disable = no-name-in-module
 from AFMReader import general_loader
 
 
-def napari_get_reader(path: list | str | Path):
+def napari_get_reader(path: list | str):
     """
-    Reader for the '.asd', '.gwy', '.ibw', '.jpk', '.spm', '.stp', '.top',
-    '.topostats' file formats.
+    Getter for the AFM file format reader.
 
     Parameters
     ----------
@@ -42,7 +41,7 @@ def napari_get_reader(path: list | str | Path):
 
 def reader_function(path):
     """
-    Take a path or list of paths and return a list of LayerData tuples.
+    Read the AFM file formats.
 
     Parameters
     ----------
@@ -51,7 +50,7 @@ def reader_function(path):
 
     Returns
     -------
-    layer_data : list[tuple]
+    list[tuple]
         A list of a single LayerData tuple where each tuple in the list contains
         (data, metadata, layer_type="image"), where 'data' is a numpy array,
         'metadata' is a dict the filepath and pixel to nanometre scaling ratio.
