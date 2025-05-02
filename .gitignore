@@ -172,3 +172,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project files
+#./napari-afmreader/src/napari_afmreader_tests/_tests/resources
+*.DS_Store
