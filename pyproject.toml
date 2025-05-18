@@ -64,55 +64,126 @@ dev = [
 write_to = "_version.py"
 
 [tool.black]
-line-length = 79
+line-length = 120
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.venv
+  )/
+)
+'''
 target-version = ['py38', 'py39', 'py310', 'py311']
 
+[tool.codespell]
+skip = "*.top,*.spm,*.stp'
+count = ''
+quiet-level = 3
 
 [tool.ruff]
-line-length = 79
-select = [
-    "E", "F", "W", #flake8
-    "UP", # pyupgrade
-    "I", # isort
-    "BLE", # flake8-blind-exception
-    "B", # flake8-bugbear
-    "A", # flake8-builtins
-    "C4", # flake8-comprehensions
-    "ISC", # flake8-implicit-str-concat
-    "G", # flake8-logging-format
-    "PIE", # flake8-pie
-    "SIM", # flake8-simplify
+line-length = 120
+lint.select = [
+  "A", # flake8-builtins
+  "B", # flake8-bugbear
+  "C", #
+  "D", # pydocstyle
+  "E", # pycodestyle error
+  "F",
+  "I", # isort
+  "NPY", # numpy
+  "PT", # flake8-pytest-style
+  "PTH", # flake8-use-pathlib
+  "R",
+  "S", #flake8-bandit
+  "W", # pycodestyle warning
+  "U",
+  "UP", # pyupgrade
 ]
-ignore = [
-    "E501", # line too long. let black handle this
-    "UP006", "UP007", # type annotation. As using magicgui require runtime type annotation then we disable this.
-    "SIM117", # flake8-simplify - some of merged with statements are not looking great with black, reanble after drop python 3.9
+lint.ignore = [
+  "A005",
+  "B905",
+  "E501",
+  "S101",
+  "S403",
 ]
-
 exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".mypy_cache",
-    ".pants.d",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-    "*vendored*",
-    "*_vendor*",
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".mypy_cache",
+  ".pants.d",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "napari-afmreader/src/napari_afmreader_tests/_tests/resources/*",
+  "node_modules",
+  "venv",
+  "*vendored*",
+  "*_vendor*",
+  "*.ipynb",
+]
+target-version = "py38"
+lint.fixable = [
+  "A", # flake8-builtins
+  "B", # flake8-bugbear
+  "C", #
+  "D", # pydocstyle
+  "E", # pycodestyle error
+  "F",
+  "I", # isort
+  "NPY", # numpy
+  "PT", # flake8-pytest-style
+  "PTH", # flake8-use-pathlib
+  "R",
+  "S", #flake8-bandit
+  "W", # pycodestyle warning
+  "U",
+  "UP", # pyupgrade
+]
+lint.unfixable = []
+lint.extend-select = ["NPY201"]
+preview = false
+lint.flake8-quotes.docstring-quotes = "double"
+lint.isort.case-sensitive = true
+lint.pydocstyle.convention = "numpy"
+lint.flake8-pytest-style.fixture-parentheses = true
+
+[tool.numpydoc_validation]
+checks = [
+  "all", # Perform all check except those listed below
+  "ES01",
+  "EX01",
+  "PR10", # Conflicts with black formatting
+  "SA01",
+]
+exclude = [  # don't report on objects that match any of these regex
+    "\\.undocumented_method$",
+    "\\.__repr__$",
+    "^test_",
+    "^conftest",
+    "^conf$",
+]
+override_SS05 = [  # override SS05 to allow docstrings starting with these words
+    "^Process ",
+    "^Assess ",
+    "^Access ",
 ]
 
-target-version = "py38"
-fix = true
+[tool.coverage.run]
+source = ["topostats"]
+omit = [
+  "topostats/_version.py",
+  "*tests*",
+  "**/__init__*",
+]
 
 #[project.entry-points."napari.manifest"]
-napari-afmreader = "napari-afmreader.napari.yaml"
+#napari-afmreader = "napari-afmreader.napari.yaml"

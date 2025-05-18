@@ -4,19 +4,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from napari_afmreader._reader import napari_get_reader
 
-
 BASE_DIR = Path.cwd()
-RESOURCES = (
-    BASE_DIR
-    / "napari-afmreader"
-    / "src"
-    / "napari_afmreader_tests"
-    / "_tests"
-    / "resources"
-)
+RESOURCES = BASE_DIR / "napari-afmreader" / "src" / "napari_afmreader_tests" / "_tests" / "resources"
 
 
 @pytest.mark.parametrize(
@@ -116,7 +107,6 @@ def test_get_reader_returns_callable(
     expected_messages: list,
 ):
     """Calling get_reader on numpy file returns callable."""
-
     messages_seen = []
 
     def get_text_side_effect(*args, **_kwargs):
@@ -149,14 +139,13 @@ def test_get_reader_returns_callable(
         "Channel Name: ",
         *expected_messages[:-1],
     ]  # upto final expected message
-    for expected_message_box, message_seen in zip(
-        expected_messages_box, messages_seen
-    ):
+    for expected_message_box, message_seen in zip(expected_messages_box, messages_seen):
         print(expected_message_box)
         print(expected_messages_box)
         assert expected_message_box in message_seen
 
-    assert isinstance(layer_data_list, list) and len(layer_data_list) > 0
+    assert isinstance(layer_data_list, list)
+    assert len(layer_data_list) > 0
 
     layer_data_tuple = layer_data_list[0]
     assert isinstance(layer_data_tuple, tuple)
@@ -166,9 +155,7 @@ def test_get_reader_returns_callable(
 @pytest.mark.parametrize(
     ("filepath"),
     [
-        pytest.param(
-            str(RESOURCES / "file.asd"), id="Cancelled dialogue box."
-        ),
+        pytest.param(str(RESOURCES / "file.asd"), id="Cancelled dialogue box."),
     ],
 )
 def test_get_reader_cancel_box(filepath: str):
@@ -186,9 +173,7 @@ def test_get_reader_cancel_box(filepath: str):
 @pytest.mark.parametrize(
     ("filepath"),
     [
-        pytest.param(
-            str(RESOURCES / "file.xxx"), id="Not supported extension."
-        ),
+        pytest.param(str(RESOURCES / "file.xxx"), id="Not supported extension."),
     ],
 )
 def test_get_reader_unsupported(filepath: str):

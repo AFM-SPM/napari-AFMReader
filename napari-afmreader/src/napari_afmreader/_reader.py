@@ -1,11 +1,9 @@
-"""
-Use AFMReader to load Atomic Force Miscroscopy image files into Napari.
-"""
+"""Use AFMReader to load Atomic Force Microscopy image files into Napari."""
 
 from pathlib import Path
 
-from qtpy.QtWidgets import QInputDialog  # pylint: disable = no-name-in-module
 from AFMReader import general_loader
+from qtpy.QtWidgets import QInputDialog  # pylint: disable = no-name-in-module
 
 
 def napari_get_reader(path: list | str):
@@ -30,9 +28,7 @@ def napari_get_reader(path: list | str):
         path = path[0]
 
     # if we know we cannot read the file, we immediately return None.
-    if not path.endswith(
-        (".asd", ".gwy", ".ibw", ".jpk", ".spm", ".stp", ".top", ".topostats")
-    ):
+    if not path.endswith((".asd", ".gwy", ".ibw", ".jpk", ".spm", ".stp", ".top", ".topostats")):
         return None
 
     # otherwise we return the *function* that can read ``path``.
