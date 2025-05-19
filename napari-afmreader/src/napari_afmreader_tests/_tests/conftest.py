@@ -7,7 +7,7 @@ from _pytest.logging import LogCaptureFixture
 
 @pytest.fixture()
 def caplog(caplog: LogCaptureFixture):  # pylint: disable=redefined-outer-name
-    """Instantiate the logging capture for loguru."""
+    """Instantiate the logging capture for loguru into caplog."""
     handler_id = logger.add(
         caplog.handler,
         format="{message}",
