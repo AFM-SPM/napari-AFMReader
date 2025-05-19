@@ -1,0 +1,46 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: napari-AFMReader
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Alice
+    family-names: Pyne
+    email: a.l.pyne@sheffield.ac.uk
+    affiliation: The University of Sheffield
+    orcid: "https://orcid.org/0000-0002-2658-8987"
+  - given-names: Max
+    family-names: Gamill
+    email: mcgamill1@sheffield.ac.uk
+    affiliation: The University of Sheffield
+    orcid: "https://orcid.org/0009-0007-3250-5299"
+  - given-names: Neil
+    family-names: Shephard
+    email: n.shephard@sheffield.ac.uk
+    affiliation: The University of Sheffield
+    orcid: "https://orcid.org/0000-0001-8301-6857"
+  - given-names: Syliva
+    family-names: Whittle
+    email: sylvia.whittle@sheffield.ac.uk
+    affiliation: The University of Sheffield
+    orcid: "https://orcid.org/0009-0008-9164-9513"
+
+identifiers:
+  - type: url
+    value: 'https://github.com/AFM-SPM/napari-AFMReader.git'
+    description: source code
+abstract: >-
+  napari-AFMReader is Napari plugin to read Atomic Force Microscopy images.
+keywords:
+  - atomic force microscopy
+  - python
+  - napari
+  - plugin
+license: GPL-3.0
+commit: cd0ec35a5071deb7f6f8ef6dce6598a542cb059b
+version: 0.0.1
+date-released: "2023-05-18"
