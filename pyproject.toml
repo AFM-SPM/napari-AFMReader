@@ -127,6 +127,7 @@ exclude = [
   "venv",
   "*vendored*",
   "*_vendor*",
+  "_version*",
   "*.ipynb",
 ]
 target-version = "py38"
@@ -169,6 +170,7 @@ exclude = [  # don't report on objects that match any of these regex
     "^test_",
     "^conftest",
     "^conf$",
+    "_version*",
 ]
 override_SS05 = [  # override SS05 to allow docstrings starting with these words
     "^Process ",
