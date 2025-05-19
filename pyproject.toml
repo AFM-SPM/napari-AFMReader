@@ -41,7 +41,6 @@ dependencies = [
   "magicgui",
   "napari[all]",
   "qtpy",
-  "topostats",
   "tox",
 ]
 
@@ -77,7 +76,7 @@ exclude = '''
 target-version = ['py38', 'py39', 'py310', 'py311']
 
 [tool.codespell]
-skip = "*.top,*.spm,*.stp'
+skip = '*.top,*.spm,*.stp'
 count = ''
 quiet-level = 3
 
@@ -178,9 +177,9 @@ override_SS05 = [  # override SS05 to allow docstrings starting with these words
 ]
 
 [tool.coverage.run]
-source = ["topostats"]
+source = ["napari_afmreader"]
 omit = [
-  "topostats/_version.py",
+  "_version.py",
   "*tests*",
   "**/__init__*",
 ]
