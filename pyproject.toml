@@ -38,7 +38,7 @@ keywords = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-  "afmreader",
+  "AFMReader @ git+https://github.com/AFM-SPM/AFMReader@main",
   "magicgui",
   "napari[all]",
   "qtpy",
