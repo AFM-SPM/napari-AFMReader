@@ -17,9 +17,9 @@ authors = [
   {name = "Max Gamill", email = "mcgamill1@sheffield.ac.uk"},
 ]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "Framework :: napari",
-  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
@@ -34,6 +34,7 @@ classifiers = [
 keywords = [
   "afm",
   "image processing",
+  "napari",
 ]
 requires-python = ">=3.8"
 dependencies = [
@@ -43,6 +44,15 @@ dependencies = [
   "qtpy",
   "tox",
 ]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/AFM-SPM/napari-AFMReader/issues"
+"Documentation" = "https://github.com/AFM-SPM/napari-AFMReader#README.md"
+"Source Code" = "https://github.com/AFM-SPM/napari-AFMReader"
+"User Support" = "https://github.com/AFM-SPM/napari-AFMReader/issues"
+
+[project.entry-points."napari.manifest"]
+napari-afmreader = "napari_afmreader:napari.yaml"
 
 [project.optional-dependencies]
 tests = [
@@ -58,6 +68,15 @@ dev = [
   "pylint",
   "ruff",
 ]
+
+[tool.setuptools]
+package-dir = { "" = "napari-afmreader/src" }
+
+[tool.setuptools.packages.find]
+where = ["napari-afmreader/src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]
 
 [tool.setuptools_scm]
 write_to = "_version.py"
@@ -185,6 +204,3 @@ omit = [
   "*tests*",
   "**/__init__*",
 ]
-
-#[project.entry-points."napari.manifest"]
-#napari-afmreader = "napari-afmreader.napari.yaml"
