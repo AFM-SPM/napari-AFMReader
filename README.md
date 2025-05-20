@@ -27,23 +27,25 @@ status](https://results.pre-commit.ci/badge/github/AFM-SPM/napari-afmreader/main
 
 </div>
 
-A [Napari](https://napari.org/) plugin to read in Atomic Force Microscopy (AFM) files via our sister software
+A [Napari](https://napari.org/) plugin to read in Atomic Force Microscopy (AFM) files using
 [AFMReader](https://github.com/AFM-SPM/AFMReader.git).
 
 You can drag and drop your favourite AFM image files directly into the Napari viewer to use the awesome tools the image
 analysis community have developed over at the [Napari Hub](https://www.napari-hub.org/) to analyse your images using
 open-source software and a GUI!
 
+<div align="center">
 | File Extension | Supported by AFMReader | Description              |
 | -------------- | ---------------------- | ------------------------ |
-| asd            | ✅                     | High-speed AFM format.   |
-| gwy            | ✅                     | Gwyddion saved format.   |
-| ibw            | ✅                     | Igor binary-wave format. |
-| jpk            | ✅                     | JPK instruments format.  |
-| spm            | ✅                     | Bruker spm format.       |
-| stp            | ✅                     | Homemade stp format.     |
-| top            | ✅                     | Homemade top format.     |
-| napari-afmreader      | ✅                     | napari-afmreader output format. |
+| `.asd`         | ✅                     | High-speed AFM format.   |
+| `.gwy`         | ✅                     | Gwyddion saved format.   |
+| `.ibw`         | ✅                     | Igor binary-wave format. |
+| `.jpk`         | ✅                     | JPK instruments format.  |
+| `.spm`         | ✅                     | Bruker spm format.       |
+| `.stp`         | ✅                     | Homemade stp format.     |
+| `.top`         | ✅                     | Homemade top format.     |
+| `.topostats`   | ✅                     | topostats output format. |
+</div>
 
 ## Installation
 
@@ -53,19 +55,18 @@ This software should be installable directly from Napari!
 
 All you need to do is:
 
-1. Open Napari by typing the `napari` into your command line with your
-   [Napari environment activated](https://napari.org/stable/tutorials/fundamentals/installation.html).
-
+1. [Install Napari](https://napari.org/stable/tutorials/fundamentals/installation.html) into an environment.
+2. Open Napari by typing `napari` into your command line with your Napari environment activated.
    ```bash
    napari
    ```
 
-2. Go to `Plugins` > `Install/Uninstall Plugins`, and search for `napari-afmreader`.
+3. Go to `Plugins` > `Install/Uninstall Plugins`, and search for `napari-afmreader`.
 
 ### Via Git
 
 Occasionally the Napari-Hub version of `napari-AFMReader` may not be the most up-to-date. This is when you might want
-to install both `AFMReader` and `napari-AFMReader` via Git.
+to install both the most up-to-date `AFMReader` and `napari-AFMReader` versions via Git.
 
 `napari-AFMReader` has been designed to need minimal maintenance, with most of the new file type additions being solely
 added to AFMReader.
@@ -82,7 +83,7 @@ added to AFMReader.
    ```
 
 2. Activate your Python environment (e.g. Conda) and install the dependencies for each - make sure that the `AFMReader`
-   dependency is installed second!
+   dependency is installed second to overwrite the possibly outdated `afmreader` package!
 
    ```bash
    cd napari-AFMReader
@@ -106,7 +107,7 @@ added to AFMReader.
 
 This package should be fairly straight-forward and intuitive to use, requiring you to:
 
-1. Drag and drop your supported AFM file format into the Napari Viewer.
+1. Drag and drop your supported AFM file into the Napari Viewer.
 
 2. Type in the name of the channel you would like to use. You may not need to specify a channel for e.g. `.stp`, or the
    channel may refer to image key in the `.napari-afmreader` file.\*.
