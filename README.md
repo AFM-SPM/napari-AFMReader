@@ -4,7 +4,6 @@
 
 [![PyPI version](https://badge.fury.io/py/napari-afmreader.svg)](https://badge.fury.io/py/napari-afmreader)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/napari-afmreader)
-[![Documentation Status](https://readthedocs.org/projects/napari-afmreader/badge/?version=dev)](https://napari-afmreader.readthedocs.io/en/dev/?badge=dev)
 [![Code style:
 Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -12,7 +11,6 @@ Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astr
 [![codecov](https://codecov.io/gh/AFM-SPM/napari-afmreader/branch/dev/graph/badge.svg)](https://codecov.io/gh/AFM-SPM/napari-afmreader)
 [![pre-commit.ci
 status](https://results.pre-commit.ci/badge/github/AFM-SPM/napari-afmreader/main.svg)](https://results.pre-commit.ci/latest/github/AFM-SPM/napari-afmreader/main)
-[![ORDA](https://img.shields.io/badge/ORDA--DOI-10.15131%2Fshef.data.22633528.v.1-lightgrey)](https://figshare.shef.ac.uk/articles/software/napari-afmreader/22633528/1)
 [![fair-software.eu](https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8B-yellow)](https://fair-software.eu)
 
 </div>
