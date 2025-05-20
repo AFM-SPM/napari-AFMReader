@@ -45,10 +45,10 @@ dependencies = [
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/AFM-SPM/napari-AFMReader/issues"
-"Documentation" = "https://github.com/AFM-SPM/napari-AFMReader#README.md"
-"Source Code" = "https://github.com/AFM-SPM/napari-AFMReader"
-"User Support" = "https://github.com/AFM-SPM/napari-AFMReader/issues"
+"Bug Tracker" = "https://github.com/AFM-SPM/napari-afmreader/issues"
+"Documentation" = "https://github.com/AFM-SPM/napari-afmreader#README.md"
+"Source Code" = "https://github.com/AFM-SPM/napari-afmreader"
+"User Support" = "https://github.com/AFM-SPM/napari-afmreader/issues"
 
 [project.entry-points."napari.manifest"]
 napari-afmreader = "napari_afmreader:napari.yaml"
