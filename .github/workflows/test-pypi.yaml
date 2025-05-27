@@ -21,14 +21,12 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
       - name: Installing the package
         run: |
-          pip3 install .
           pip3 install .[pypi]
       - name: Build package
         run: |
-          pip3 install --upgrade setuptools
           export DEB_PYTHON_INSTALL_LAYOUT=deb_system
           python -m build --no-isolation
       - name: Publish package to Test PyPI
