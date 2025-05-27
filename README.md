@@ -55,6 +55,7 @@ All you need to do is:
 
 1. [Install Napari](https://napari.org/stable/tutorials/fundamentals/installation.html) into an environment.
 2. Open Napari by typing `napari` into your command line with your Napari environment activated.
+
    ```bash
    napari
    ```
