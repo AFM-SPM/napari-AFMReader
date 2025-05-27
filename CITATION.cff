@@ -8,11 +8,6 @@ message: >-
   metadata from this file.
 type: software
 authors:
-  - given-names: Alice
-    family-names: Pyne
-    email: a.l.pyne@sheffield.ac.uk
-    affiliation: The University of Sheffield
-    orcid: "https://orcid.org/0000-0002-2658-8987"
   - given-names: Max
     family-names: Gamill
     email: mcgamill1@sheffield.ac.uk
@@ -28,6 +23,11 @@ authors:
     email: sylvia.whittle@sheffield.ac.uk
     affiliation: The University of Sheffield
     orcid: "https://orcid.org/0009-0008-9164-9513"
+  - given-names: Alice
+    family-names: Pyne
+    email: a.l.pyne@sheffield.ac.uk
+    affiliation: The University of Sheffield
+    orcid: "https://orcid.org/0000-0002-2658-8987"
 
 identifiers:
   - type: url
