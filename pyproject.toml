@@ -67,6 +67,11 @@ dev = [
   "pylint",
   "ruff",
 ]
+pypi = [
+  "build",
+  "setuptools_scm[toml]",
+  "wheel",
+]
 
 [tool.setuptools]
 package-dir = { "" = "napari-afmreader/src" }
