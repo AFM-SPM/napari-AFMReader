@@ -33,6 +33,8 @@ identifiers:
   - type: url
     value: 'https://github.com/AFM-SPM/napari-AFMReader.git'
     description: source code
+  - type: doi
+    value: 10.15131/shef.data.29263577
 abstract: >-
   napari-AFMReader is Napari plugin to read Atomic Force Microscopy images.
 keywords:
