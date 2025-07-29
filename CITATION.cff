@@ -31,7 +31,7 @@ authors:
 
 identifiers:
   - type: url
-    value: 'https://github.com/AFM-SPM/napari-AFMReader.git'
+    value: "https://github.com/AFM-SPM/napari-AFMReader.git"
     description: source code
   - type: doi
     value: 10.15131/shef.data.29263577
