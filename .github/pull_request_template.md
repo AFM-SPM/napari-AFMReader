@@ -1,9 +1,9 @@
-# TopoStats Pull Requests
+# Napari-AFMReader Pull Requests
 
 Please provide a descriptive summary of the changes your Pull Request introduces.
 
 The [Software Development](https://afm-spm.github.io/TopoStats/main/contributing.html#software-development) section of
-the Contributing Guidelines may be useful if you are unfamiliar with linting, pre-commit, docstrings and testing.
+the (TopoStats) Contributing Guidelines may be useful if you are unfamiliar with linting, pre-commit, docstrings and testing.
 
 **NB** - This header should be replaced with the description but please complete the below checklist or a short
 description of why a particular item is not relevant.
