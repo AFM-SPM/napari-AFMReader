@@ -1,7 +1,6 @@
 """Use AFMReader to load Atomic Force Microscopy image files into Napari."""
 
 from pathlib import Path
-
 from AFMReader import general_loader
 from qtpy.QtWidgets import QInputDialog  # pylint: disable = no-name-in-module
 
@@ -35,7 +34,7 @@ def napari_get_reader(path: list | str):
     return reader_function
 
 
-def reader_function(path):
+def reader_function(path, channel=None):
     """
     Read the AFM file formats.
 
@@ -54,22 +53,34 @@ def reader_function(path):
     # handle both a string and a list of strings
     paths = [Path(path)] if isinstance(path, str) else Path(path)
     # load all files into array
-    available_channels = None
-    while True:
-        if available_channels is None:
-            message = "Channel Name: "
-        else:
-            message = f"Available channels: {available_channels}"
-        # adds dialog box for channel input
-        user_input, ok = QInputDialog.getText(None, "Input Channel", message)
+    if channel:
+        loader = general_loader.LoadFile(paths[0], channel)
+    else:
+        loader = general_loader.LoadFile(paths[0], "Ignore this error message")
+    image, px2nm = loader.load()
+    if px2nm is None:
+        image = f"{image}"
+        # remove rightmost channel info # remove channel info
+        available_channels = list(dict.fromkeys(
+            channel.replace('"', '').replace("'", "") for channel in image[image.rindex("[") + 1:image.rindex("]")].split(", ")
+        ))
+    while px2nm is None:
+        print("Shouldn't be here")
+        message = "Select a channel to load:"
+        user_input, ok = QInputDialog.getItem(
+            None,                      # parent widget
+            message,          # dialog title
+            "Available channels:",     # label
+            available_channels,        # items in dropdown
+            0,                         # default index
+            True                      # editable? (True = user can type custom)
+        )
         if not ok:
             return None
         loader = general_loader.LoadFile(paths[0], user_input)
         image, px2nm = loader.load()
         if px2nm is None:
             available_channels = f"{image}."
-        else:
-            break
 
     # metadata should be the same for all images in a stack
     metadata = {
