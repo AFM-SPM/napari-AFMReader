@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0 # Use the ref you want to point at
+    rev: v6.0.0 # Use the ref you want to point at
     hooks:
       - id: check-case-conflict
       - id: check-docstring-first
@@ -19,26 +19,26 @@ repos:
         types: [python, yaml, markdown]
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.17.2
+    rev: v0.18.1
     hooks:
       - id: markdownlint-cli2
         args: []
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.20.0
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.11.4
+    rev: v0.13.3
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix, --show-fixes]
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 25.1.0
+    rev: 25.9.0
     hooks:
       - id: black
         types: [python]
@@ -47,7 +47,7 @@ repos:
       - id: black-jupyter
 
   - repo: https://github.com/adamchainz/blacken-docs
-    rev: 1.19.1
+    rev: 1.20.0
     hooks:
       - id: blacken-docs
         additional_dependencies:
@@ -59,7 +59,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.5.3
+    rev: v3.6.2
     hooks:
       - id: prettier
 
@@ -78,7 +78,7 @@ repos:
       - id: nbqa-pyupgrade
 
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.8.0
+    rev: v1.9.0
     hooks:
       - id: numpydoc-validation
 
@@ -99,6 +99,14 @@ repos:
         args: ["--rcfile=.pylintrc"]
         name: Pylint
         entry: python -m pylint
+        language: system
+        files: \.py$
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Pytest (testmon)
+        entry: pytest --testmon
         language: system
         files: \.py$
 

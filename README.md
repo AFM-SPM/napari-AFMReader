@@ -11,6 +11,7 @@ Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astr
 [![codecov](https://codecov.io/gh/AFM-SPM/napari-afmreader/branch/dev/graph/badge.svg)](https://codecov.io/gh/AFM-SPM/napari-afmreader)
 [![pre-commit.ci
 status](https://results.pre-commit.ci/badge/github/AFM-SPM/napari-afmreader/main.svg)](https://results.pre-commit.ci/latest/github/AFM-SPM/napari-afmreader/main)
+[![ORDA](https://img.shields.io/badge/ORDA--DOI-10.15131/shef.data.29263577.v.1-lightgrey)](https://figshare.shef.ac.uk/articles/software/napar-AFMReader/)
 [![fair-software.eu](https://img.shields.io/badge/fair--software.eu-%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8F%20%20%E2%97%8B-yellow)](https://fair-software.eu)
 
 </div>
