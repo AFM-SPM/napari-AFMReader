@@ -1,6 +1,7 @@
 """Use AFMReader to load Atomic Force Microscopy image files into Napari."""
 
 from pathlib import Path
+
 from AFMReader import general_loader
 from qtpy.QtWidgets import QInputDialog  # pylint: disable = no-name-in-module
 
@@ -61,19 +62,22 @@ def reader_function(path, channel=None):
     if px2nm is None:
         image = f"{image}"
         # remove rightmost channel info # remove channel info
-        available_channels = list(dict.fromkeys(
-            channel.replace('"', '').replace("'", "") for channel in image[image.rindex("[") + 1:image.rindex("]")].split(", ")
-        ))
+        available_channels = list(
+            dict.fromkeys(
+                channel.replace('"', "").replace("'", "")
+                for channel in image[image.rindex("[") + 1 : image.rindex("]")].split(", ")
+            )
+        )
     while px2nm is None:
         print("Shouldn't be here")
         message = "Select a channel to load:"
         user_input, ok = QInputDialog.getItem(
-            None,                      # parent widget
-            message,          # dialog title
-            "Available channels:",     # label
-            available_channels,        # items in dropdown
-            0,                         # default index
-            True                      # editable? (True = user can type custom)
+            None,  # parent widget
+            message,  # dialog title
+            "Available channels:",  # label
+            available_channels,  # items in dropdown
+            0,  # default index
+            True,  # editable? (True = user can type custom)
         )
         if not ok:
             return None
