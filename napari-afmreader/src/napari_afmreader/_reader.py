@@ -42,6 +42,8 @@ def reader_function(path, channel=None):
     ----------
     path : str or list of str
         Path to file, or list of paths.
+    channel : str, optional
+        The channel to load from the AFM file. If None, a dialog will prompt the user to select a channel.
 
     Returns
     -------
