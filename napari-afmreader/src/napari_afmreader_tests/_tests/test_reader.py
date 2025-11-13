@@ -11,61 +11,78 @@ RESOURCES = BASE_DIR / "napari-afmreader" / "src" / "napari_afmreader_tests" / "
 
 
 @pytest.mark.parametrize(
-    ("filepath", "side_effect", "expected_messages"),
+    ("filepath", "side_effect", "expected_messages", "additional_reader_kwargs"),
     [
         pytest.param(
             str(RESOURCES / "file.asd"),
             [("TP", True)],
             ["Extracted image"],
+            {},
             id="load asd valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.gwy"),
             [("ZSensor", True)],
             ["Extracted image"],
+            {},
             id="load gwy valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.ibw"),
             [("HeightTracee", True)],
             ["Extracted image"],
+            {},
             id="load ibw valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.jpk"),
             [("height_trace", True)],
             ["Extracted image"],
+            {},
             id="load jpk valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.spm"),
             [("Height", True)],
             ["Extracted channel Height"],
+            {},
             id="load spm valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.stp"),
-            [("Height", True)],  # or any placeholder, dialog never opens
+            [("Height", True)],
             ["Extracted image"],
+            {},
             id="load stp single-pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.top"),
-            [("Height", True)],  # dialog never opens, but structure must match
+            [("Height", True)],
             ["Extracted image"],
+            {},
             id="load top single-pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.topostats"),
             [("image_original", True)],
             ["Extracted .topostats dictionary"],
+            {},
             id="load topostats image_original valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.topostats"),
             [("image", True)],
             ["Extracted .topostats dictionary"],
+            {},
             id="load topostats image valid pass.",
+        ),
+        # NEW TEST: channel kwarg provided → no dialog expected
+        pytest.param(
+            str(RESOURCES / "file.spm"),
+            [("Height", True)],  # gets ignored because dialog never called
+            ["Extracted channel Height"],
+            {"channel": "Height"},
+            id="load spm valid pass with channel kwarg.",
         ),
     ],
 )
@@ -74,6 +91,7 @@ def test_get_reader_returns_callable(
     filepath: str,
     side_effect: list,
     expected_messages: list,
+    additional_reader_kwargs: dict,
 ):
     """Calling get_reader on numpy file returns callable."""
     messages_seen = []
@@ -98,7 +116,7 @@ def test_get_reader_returns_callable(
         reader = napari_get_reader(filepath)
 
         assert callable(reader)
-        layer_data_list = reader(filepath)
+        layer_data_list = reader(filepath, **additional_reader_kwargs)
 
     # reads terminal output - wrong channel msg and completion msg
     for expected_message in expected_messages:
