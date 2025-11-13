@@ -37,9 +37,8 @@ def napari_get_reader(path: list | str):
     # otherwise we return the *function* that can read ``path``.
     return reader_function
 
-
 def suppress_ignorable_logging():
-    # Remove default handler
+
     logger.remove()
 
     # Add handler with a filter function
@@ -95,7 +94,7 @@ def reader_function(path, channel=None):
             label,  # label
             available_channels,  # items in dropdown
             0,  # default index
-            True,  # editable? (True = user can type custom)
+            False,  # editable? (True = user can type custom)
         )
         if not ok:
             return None
@@ -118,10 +117,18 @@ def reader_function(path, channel=None):
 
 def error_to_list(error):
     available_channels = f"{error}."
-    available_channels = list(
-        dict.fromkeys(
-            channel.replace('"', "").replace("'", "")
-            for channel in available_channels[available_channels.rindex("[") + 1 : available_channels.rindex("]")].split(", ")
+    if "[" in available_channels and "]" in available_channels:
+        available_channels = list(
+            dict.fromkeys(
+                channel.replace('"', "").replace("'", "")
+                for channel in available_channels[available_channels.rindex("[") + 1 : available_channels.rindex("]")].split(", ")
+            )
         )
-    )
+    else:
+        available_channels = list(
+            dict.fromkeys(
+                channel.replace('"', "").replace("'", "")
+                for channel in available_channels[available_channels.rindex(": ") + 1 :].split(", ")
+            )
+        )
     return available_channels
