@@ -38,8 +38,12 @@ def napari_get_reader(path: list | str):
     return reader_function
 
 def suppress_ignorable_logging():
-
-    logger.remove()
+    # Identify sinks you want to remove
+    for hid, handler in list(logger._core.handlers.items()):
+        if getattr(handler, "_is_caplog", False):
+            continue    # keep caplog
+        
+        logger.remove(hid)
 
     # Add handler with a filter function
     def filter_ignore_errors(record):
