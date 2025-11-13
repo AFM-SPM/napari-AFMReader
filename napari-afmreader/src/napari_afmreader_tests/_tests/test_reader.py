@@ -69,7 +69,6 @@ RESOURCES = BASE_DIR / "napari-afmreader" / "src" / "napari_afmreader_tests" / "
         ),
     ],
 )
-
 def test_get_reader_returns_callable(
     caplog: pytest.LogCaptureFixture,
     filepath: str,

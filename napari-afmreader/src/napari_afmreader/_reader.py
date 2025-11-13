@@ -1,11 +1,10 @@
 """Use AFMReader to load Atomic Force Microscopy image files into Napari."""
 
 import sys
-
-from loguru import logger
 from pathlib import Path
 
 from AFMReader import general_loader
+from loguru import logger
 from qtpy.QtWidgets import QInputDialog  # pylint: disable = no-name-in-module
 
 
@@ -37,12 +36,13 @@ def napari_get_reader(path: list | str):
     # otherwise we return the *function* that can read ``path``.
     return reader_function
 
+
 def suppress_ignorable_logging():
     # Identify sinks you want to remove
     for hid, handler in list(logger._core.handlers.items()):
         if getattr(handler, "_is_caplog", False):
-            continue    # keep caplog
-        
+            continue  # keep caplog
+
         logger.remove(hid)
 
     # Add handler with a filter function
@@ -56,9 +56,10 @@ def suppress_ignorable_logging():
         format="<blue>{time:HH:mm:ss}</blue> | <level>{level}</level> |"
         "<magenta>{file}</magenta>:<magenta>{module}</magenta>:<magenta>"
         "{function}</magenta>:<magenta>{line}</magenta> | <level>{message}</level>",
-        filter=filter_ignore_errors
+        filter=filter_ignore_errors,
     )
-        
+
+
 def reader_function(path, channel=None):
     """
     Read the AFM file formats.
@@ -85,7 +86,7 @@ def reader_function(path, channel=None):
         loader = general_loader.LoadFile(paths[0], channel)
     else:
         loader = general_loader.LoadFile(paths[0], "**IGNORE**")
-    
+
     image, px2nm = loader.load()
     if px2nm is None:
         available_channels = error_to_list(image)
@@ -119,13 +120,16 @@ def reader_function(path, channel=None):
     layer_type = "image"  # optional, default is "image"
     return [(image, add_kwargs, layer_type)]
 
+
 def error_to_list(error):
     available_channels = f"{error}."
     if "[" in available_channels and "]" in available_channels:
         available_channels = list(
             dict.fromkeys(
                 channel.replace('"', "").replace("'", "")
-                for channel in available_channels[available_channels.rindex("[") + 1 : available_channels.rindex("]")].split(", ")
+                for channel in available_channels[
+                    available_channels.rindex("[") + 1 : available_channels.rindex("]")
+                ].split(", ")
             )
         )
     else:

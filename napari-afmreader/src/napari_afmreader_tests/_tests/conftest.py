@@ -1,14 +1,15 @@
 """Fixtures for Pytest."""
 
 import pytest
-from napari_afmreader._reader import logger
 from _pytest.logging import LogCaptureFixture
+from napari_afmreader._reader import logger
 
 
 @pytest.fixture()
 def caplog(caplog: LogCaptureFixture):  # pylint: disable=redefined-outer-name
     """Instantiate the logging capture for loguru into caplog."""
-    def filter(record):
+
+    def filter_level(record):
         # Don't log messages containing **IGNORE**
         return record["level"].no >= caplog.handler.level
 
@@ -16,7 +17,7 @@ def caplog(caplog: LogCaptureFixture):  # pylint: disable=redefined-outer-name
         caplog.handler,
         format="{message}",
         level=0,
-        filter=filter,
+        filter=filter_level,
         enqueue=False,
     )
     logger._core.handlers[handler_id]._is_caplog = True
