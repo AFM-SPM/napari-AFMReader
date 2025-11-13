@@ -1,7 +1,5 @@
 {
-    "python.testing.pytestArgs": [
-        "napari-afmreader"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+  "python.testing.pytestArgs": ["napari-afmreader"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }
