@@ -78,7 +78,7 @@ RESOURCES = BASE_DIR / "napari-afmreader" / "src" / "napari_afmreader_tests" / "
         ),
         pytest.param(
             str(RESOURCES / "file.spm"),
-            [("Height", True)], 
+            [("Height", True)],
             ["Extracted channel Height"],
             {"channel": "Height"},
             id="load spm valid pass with channel kwarg.",
