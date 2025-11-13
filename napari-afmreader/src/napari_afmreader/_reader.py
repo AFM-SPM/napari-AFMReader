@@ -102,11 +102,8 @@ def reader_function(path, channel=None):
 
     image, px2nm = loader.load()
     if px2nm is None:
+        label = "Available channels:"
         available_channels = error_to_list(image)
-    else:
-        available_channels = []
-    label = "Available channels:"
-    while px2nm is None:
         message = "Select a channel to load:"
         user_input, ok = QInputDialog.getItem(
             None,  # parent widget
@@ -114,14 +111,12 @@ def reader_function(path, channel=None):
             label,  # label
             available_channels,  # items in dropdown
             0,  # default index
-            False,  # editable? (True = user can type custom)
+            False,  # editable
         )
         if not ok:
             return None
         loader = general_loader.LoadFile(paths[0], user_input)
         image, px2nm = loader.load()
-        if px2nm is None:
-            label = f'Channel "{user_input}" not found. Please select a channel from list.'  # noqa: S608
 
     # metadata should be the same for all images in a stack
     metadata = {
