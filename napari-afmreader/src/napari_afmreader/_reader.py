@@ -38,6 +38,7 @@ def napari_get_reader(path: list | str):
 
 
 def suppress_ignorable_logging():
+    """Suppress loguru logging messages containing '**IGNORE**'."""
     # Identify sinks you want to remove
     for hid, handler in list(logger._core.handlers.items()):
         if getattr(handler, "_is_caplog", False):
@@ -47,7 +48,19 @@ def suppress_ignorable_logging():
 
     # Add handler with a filter function
     def filter_ignore_errors(record):
-        """Filter out 'not in channel list' error messages."""
+        """
+        Filter out 'not in channel list' error messages.
+
+        Parameters
+        ----------
+        record : dict
+            The log record.
+
+        Returns
+        -------
+        bool
+            True if the record should be logged, False otherwise.
+        """
         return "**IGNORE**" not in record["message"]
 
     logger.add(
@@ -90,6 +103,8 @@ def reader_function(path, channel=None):
     image, px2nm = loader.load()
     if px2nm is None:
         available_channels = error_to_list(image)
+    else:
+        available_channels = []
     label = "Available channels:"
     while px2nm is None:
         message = "Select a channel to load:"
@@ -106,7 +121,7 @@ def reader_function(path, channel=None):
         loader = general_loader.LoadFile(paths[0], user_input)
         image, px2nm = loader.load()
         if px2nm is None:
-            label = f'Channel "{user_input}" not found. Please select a channel from list.'
+            label = f'Channel "{user_input}" not found. Please select a channel from list.'  # noqa: S608
 
     # metadata should be the same for all images in a stack
     metadata = {
@@ -122,6 +137,19 @@ def reader_function(path, channel=None):
 
 
 def error_to_list(error):
+    """
+    Convert error message listing available channels into a list of channels.
+
+    Parameters
+    ----------
+    error : str
+        The error message containing available channels.
+
+    Returns
+    -------
+    list[str]
+        A list of available channel names.
+    """
     available_channels = f"{error}."
     if "[" in available_channels and "]" in available_channels:
         available_channels = list(
