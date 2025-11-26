@@ -40,7 +40,7 @@ def napari_get_reader(path: list | str):
 def suppress_ignorable_logging():
     """Suppress loguru logging messages containing '**IGNORE**'."""
     # Identify sinks you want to remove
-    for hid, handler in list(logger._core.handlers.items()):
+    for hid, handler in list(logger._core.handlers.items()):  # pylint: disable=protected-access
         if getattr(handler, "_is_caplog", False):
             continue  # keep caplog
 
