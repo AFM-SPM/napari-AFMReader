@@ -1,8 +1,10 @@
 """Use AFMReader to load Atomic Force Microscopy image files into Napari."""
 
+import sys
 from pathlib import Path
 
 from AFMReader import general_loader
+from loguru import logger
 from qtpy.QtWidgets import QInputDialog  # pylint: disable = no-name-in-module
 
 
@@ -35,7 +37,43 @@ def napari_get_reader(path: list | str):
     return reader_function
 
 
-def reader_function(path):
+def suppress_ignorable_logging():
+    """Suppress loguru logging messages containing '**IGNORE**'."""
+    # Identify sinks you want to remove
+    for hid, handler in list(logger._core.handlers.items()):  # pylint: disable=protected-access
+        if getattr(handler, "_is_caplog", False):
+            continue  # keep caplog
+
+        logger.remove(hid)
+
+    # Add handler with a filter function
+    def filter_ignore_errors(record):
+        """
+        Filter out 'not in channel list' error messages.
+
+        Parameters
+        ----------
+        record : dict
+            The log record.
+
+        Returns
+        -------
+        bool
+            True if the record should be logged, False otherwise.
+        """
+        return "**IGNORE**" not in record["message"]
+
+    logger.add(
+        sys.stderr,
+        colorize=True,
+        format="<blue>{time:HH:mm:ss}</blue> | <level>{level}</level> |"
+        "<magenta>{file}</magenta>:<magenta>{module}</magenta>:<magenta>"
+        "{function}</magenta>:<magenta>{line}</magenta> | <level>{message}</level>",
+        filter=filter_ignore_errors,
+    )
+
+
+def reader_function(path, channel=None):
     """
     Read the AFM file formats.
 
@@ -43,6 +81,8 @@ def reader_function(path):
     ----------
     path : str or list of str
         Path to file, or list of paths.
+    channel : str, optional
+        The channel to load from the AFM file. If None, a dialog will prompt the user to select a channel.
 
     Returns
     -------
@@ -51,25 +91,32 @@ def reader_function(path):
         (data, metadata, layer_type="image"), where 'data' is a numpy array,
         'metadata' is a dict the filepath and pixel to nanometre scaling ratio.
     """
+    suppress_ignorable_logging()
     # handle both a string and a list of strings
     paths = [Path(path)] if isinstance(path, str) else Path(path)
     # load all files into array
-    available_channels = None
-    while True:
-        if available_channels is None:
-            message = "Channel Name: "
-        else:
-            message = f"Available channels: {available_channels}"
-        # adds dialog box for channel input
-        user_input, ok = QInputDialog.getText(None, "Input Channel", message)
+    if channel:
+        loader = general_loader.LoadFile(paths[0], channel)
+    else:
+        loader = general_loader.LoadFile(paths[0], "**IGNORE**")
+
+    image, px2nm = loader.load()
+    if px2nm is None:
+        label = "Available channels:"
+        available_channels = error_to_list(image)
+        message = "Select a channel to load:"
+        user_input, ok = QInputDialog.getItem(
+            None,  # parent widget
+            message,  # dialog title
+            label,  # label
+            available_channels,  # items in dropdown
+            0,  # default index
+            False,  # editable
+        )
         if not ok:
             return None
         loader = general_loader.LoadFile(paths[0], user_input)
         image, px2nm = loader.load()
-        if px2nm is None:
-            available_channels = f"{image}."
-        else:
-            break
 
     # metadata should be the same for all images in a stack
     metadata = {
@@ -82,3 +129,37 @@ def reader_function(path):
 
     layer_type = "image"  # optional, default is "image"
     return [(image, add_kwargs, layer_type)]
+
+
+def error_to_list(error):
+    """
+    Convert error message listing available channels into a list of channels.
+
+    Parameters
+    ----------
+    error : str
+        The error message containing available channels.
+
+    Returns
+    -------
+    list[str]
+        A list of available channel names.
+    """
+    available_channels = f"{error}."
+    if "[" in available_channels and "]" in available_channels:
+        available_channels = list(
+            dict.fromkeys(
+                channel.replace('"', "").replace("'", "")
+                for channel in available_channels[
+                    available_channels.rindex("[") + 1 : available_channels.rindex("]")
+                ].split(", ")
+            )
+        )
+    else:
+        available_channels = list(
+            dict.fromkeys(
+                channel.replace('"', "").replace("'", "")
+                for channel in available_channels[available_channels.rindex(": ") + 1 :].split(", ")
+            )
+        )
+    return available_channels

@@ -181,3 +181,17 @@ _version.py
 # Project files
 #./napari-afmreader/src/napari_afmreader_tests/_tests/resources
 *.DS_Store
+
+# pytest-testmon files
+.testmondata*
+
+# VSCode directory
+.vscode
+
+# Emacs files
+\#*
+*~
+.dir-locals.el
+
+# Direnv file
+.envrc
