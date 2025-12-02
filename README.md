@@ -35,6 +35,9 @@ You can drag and drop your favourite AFM image files directly into the Napari vi
 analysis community have developed over at the [Napari Hub](https://www.napari-hub.org/) to analyse your images using
 open-source software and a GUI!
 
+<!-- @ns-rse : table fails MD060 (https://github.com/DavidAnson/markdownlint/blob/main/doc/md060.md) -->
+<!--           but I can not see/understand why.                                                     -->
+<!-- markdownlint-disable MD060 -->
 | File Extension | Supported by AFMReader | Description              |
 | -------------- | ---------------------- | ------------------------ |
 | `.asd`         | ✅                     | High-speed AFM format.   |
@@ -45,6 +48,7 @@ open-source software and a GUI!
 | `.stp`         | ✅                     | Homemade stp format.     |
 | `.top`         | ✅                     | Homemade top format.     |
 | `.topostats`   | ✅                     | topostats output format. |
+<!-- markdownlint-enable MD060 -->
 
 ## Installation
 
