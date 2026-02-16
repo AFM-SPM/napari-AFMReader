@@ -105,15 +105,15 @@ def reader_function(path, channel=None):
         label = "Available channels:"
         available_channels = error_to_list(image)
         message = "Select a channel to load:"
-        user_input, ok = QInputDialog.getItem(
-            None,  # parent widget
-            message,  # dialog title
-            label,  # label
-            available_channels,  # items in dropdown
-            0,  # default index
-            False,  # editable
-        )
-        if not ok:
+        dialog = QInputDialog(None)
+        dialog.setWindowTitle(message)
+        dialog.setLabelText(label)
+        dialog.setComboBoxItems(available_channels)
+        dialog.setStyleSheet("QWidget { font-size: 9px; }")
+
+        if dialog.exec():
+            user_input = dialog.textValue()
+        else:
             return None
         loader = general_loader.LoadFile(paths[0], user_input)
         image, px2nm = loader.load()
