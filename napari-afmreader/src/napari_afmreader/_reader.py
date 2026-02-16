@@ -30,7 +30,7 @@ def napari_get_reader(path: list | str):
         path = path[0]
 
     # if we know we cannot read the file, we immediately return None.
-    if not path.endswith((".asd", ".gwy", ".ibw", ".jpk", ".spm", ".stp", ".top", ".topostats")):
+    if not path.endswith((".asd", ".gwy", ".ibw", ".jpk", ".spm", ".stp", ".top", ".topostats", ".h5-jpk", ".jpk-qi-image")):
         return None
 
     # otherwise we return the *function* that can read ``path``.
@@ -97,13 +97,11 @@ def reader_function(path, channel=None):
     # load all files into array
     if channel:
         loader = general_loader.LoadFile(paths[0], channel)
+        image, px2nm = loader.load()
     else:
-        loader = general_loader.LoadFile(paths[0], "**IGNORE**")
-
-    image, px2nm = loader.load()
-    if px2nm is None:
+        loader = general_loader.LoadFile(paths[0], None)
+        available_channels = loader.get_available_channels()
         label = "Available channels:"
-        available_channels = error_to_list(image)
         message = "Select a channel to load:"
         dialog = QInputDialog(None)
         dialog.setWindowTitle(message)
@@ -129,37 +127,3 @@ def reader_function(path, channel=None):
 
     layer_type = "image"  # optional, default is "image"
     return [(image, add_kwargs, layer_type)]
-
-
-def error_to_list(error):
-    """
-    Convert error message listing available channels into a list of channels.
-
-    Parameters
-    ----------
-    error : str
-        The error message containing available channels.
-
-    Returns
-    -------
-    list[str]
-        A list of available channel names.
-    """
-    available_channels = f"{error}."
-    if "[" in available_channels and "]" in available_channels:
-        available_channels = list(
-            dict.fromkeys(
-                channel.replace('"', "").replace("'", "")
-                for channel in available_channels[
-                    available_channels.rindex("[") + 1 : available_channels.rindex("]")
-                ].split(", ")
-            )
-        )
-    else:
-        available_channels = list(
-            dict.fromkeys(
-                channel.replace('"', "").replace("'", "")
-                for channel in available_channels[available_channels.rindex(": ") + 1 :].split(", ")
-            )
-        )
-    return available_channels
