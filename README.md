@@ -35,16 +35,17 @@ You can drag and drop your favourite AFM image files directly into the Napari vi
 analysis community have developed over at the [Napari Hub](https://www.napari-hub.org/) to analyse your images using
 open-source software and a GUI!
 
-| File Extension | Supported by AFMReader | Description              |
-| -------------- | ---------------------- | ------------------------ |
-| `.asd`         | ✅                     | High-speed AFM format.   |
-| `.gwy`         | ✅                     | Gwyddion saved format.   |
-| `.ibw`         | ✅                     | Igor binary-wave format. |
-| `.jpk`         | ✅                     | JPK instruments format.  |
-| `.spm`         | ✅                     | Bruker spm format.       |
-| `.stp`         | ✅                     | Homemade stp format.     |
-| `.top`         | ✅                     | Homemade top format.     |
-| `.topostats`   | ✅                     | topostats output format. |
+| File Extension  | Supported by AFMReader | Description              |
+| --------------- | ---------------------- | ------------------------ |
+| `.asd`          | ✅                     | High-speed AFM format.   |
+| `.gwy`          | ✅                     | Gwyddion saved format.   |
+| `.ibw`          | ✅                     | Igor binary-wave format. |
+| `.jpk`          | ✅                     | JPK instruments format.  |
+| `.jpk-qi-image` | ✅                     | JPK instruments format.  |
+| `.spm`          | ✅                     | Bruker spm format.       |
+| `.stp`          | ✅                     | Homemade stp format.     |
+| `.top`          | ✅                     | Homemade top format.     |
+| `.topostats`    | ✅                     | topostats output format. |
 
 ## Installation
 
