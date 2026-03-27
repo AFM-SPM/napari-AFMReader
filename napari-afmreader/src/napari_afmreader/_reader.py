@@ -6,6 +6,7 @@ from AFMReader import general_loader
 from loguru import logger
 from magicgui.widgets import Combobox, create_widget
 from napari import current_viewer
+from napari_afmreader._alerts import LoadingWidget
 from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QComboBox,
     QDialog,
@@ -15,8 +16,6 @@ from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QVBoxLayout,
     QWidget,
 )
-
-from napari_afmreader._alerts import LoadingWidget
 
 # Global variable to give an id to each image layer loaded through this plugin
 afmreader_id = 0
@@ -116,6 +115,8 @@ def reader_function(path, channel=None):
                 # User clicked OK
                 params = dialog.get_values()
                 loaded_image.set_required_kwargs(params)
+
+        available_channels = available_channels.keys() if isinstance(available_channels, dict) else available_channels
 
         if available_channels != []:
             # If there are channels available for the file, prompt the user to select a channel to load with an input dialog
@@ -341,6 +342,7 @@ class LoadedImage:
             "image": image_data,
             "px2nm": self.image_channels[self.current_channel]["px2nm"] if self.current_channel else 1,
         }
+        print(f"Available channels: {self.available_channels}")
         if channel_name not in self.available_channels:
             self.available_channels.append(channel_name)
         update_image_options_widget()
@@ -361,6 +363,11 @@ class LoadedImage:
         if isinstance(self.available_channels, tuple):
             self.required_kwargs = self.available_channels[1]
             self.available_channels = self.available_channels[0]
+        self.available_channels = (
+            list(self.available_channels.keys())
+            if isinstance(self.available_channels, dict)
+            else self.available_channels
+        )
 
         # Set layer id (used for tracking in loaded images)
         self.layer_id = layer_id
