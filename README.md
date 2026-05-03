@@ -110,12 +110,14 @@ This package should be fairly straight-forward and intuitive to use, requiring y
 
 1. Drag and drop your supported AFM file into the Napari Viewer.
 
-2. Type in the name of the channel you would like to use. You may not need to specify a channel for e.g. `.stp`, or the
-   channel may refer to image key in the `.napari-afmreader` file.\*.
+2. For certain file formats (currently `.jpk-qi-data` and `.bin`), a dialog window will open allowing you to choose
+   special loading parameters for that file.
 
-   \*_Possible channel names will not appear at first due to the order in which AFMReader processes an image. Thus,
-   when provided with an non-existent channel name, the dialogue box will then return a list of possible channels to
-   choose from._
+3. Select the name of the channel you would like to use. You may not need to specify a channel for e.g. `.stp`, or the
+   channel may refer to image key in the `.napari-afmreader` file.
+
+4. Once loaded the channel for the image can be changed to one of the other options using the widget in the dock on
+   the right.
 
 ## Licence
 
