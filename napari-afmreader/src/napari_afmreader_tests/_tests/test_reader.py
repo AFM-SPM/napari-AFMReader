@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from napari import Viewer
 from napari_afmreader._reader import napari_get_reader
 
 BASE_DIR = Path.cwd()
@@ -11,74 +12,84 @@ RESOURCES = BASE_DIR / "napari-afmreader" / "src" / "napari_afmreader_tests" / "
 
 
 @pytest.mark.parametrize(
-    ("filepath", "side_effect", "expected_messages", "additional_reader_kwargs"),
+    ("filepath", "channel", "expected_result", "expected_messages", "additional_reader_kwargs"),
     [
         pytest.param(
             str(RESOURCES / "file.asd"),
-            [("TP", True)],
+            "TP",
+            True,
             ["Extracted image"],
             {},
             id="load asd valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.gwy"),
-            [("ZSensor", True)],
+            "ZSensor",
+            True,
             ["Extracted image"],
             {},
             id="load gwy valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.ibw"),
-            [("HeightTracee", True)],
+            "HeightTracee",
+            True,
             ["Extracted image"],
             {},
             id="load ibw valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.jpk"),
-            [("height_trace", True)],
+            "height_trace",
+            True,
             ["Extracted image"],
             {},
             id="load jpk valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.spm"),
-            [("Height", True)],
+            "Height",
+            True,
             ["Extracted channel Height"],
             {},
             id="load spm valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.stp"),
-            [("Height", True)],
+            "Height",
+            True,
             ["Extracted image"],
             {},
             id="load stp single-pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.top"),
-            [("Height", True)],
+            "Height",
+            True,
             ["Extracted image"],
             {},
             id="load top single-pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.topostats"),
-            [("image_original", True)],
+            "image_original",
+            True,
             ["Extracted .topostats dictionary"],
             {},
             id="load topostats image_original valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.topostats"),
-            [("image", True)],
+            "image",
+            True,
             ["Extracted .topostats dictionary"],
             {},
             id="load topostats image valid pass.",
         ),
         pytest.param(
             str(RESOURCES / "file.spm"),
-            [("Height", True)],
+            "Height",
+            True,
             ["Extracted channel Height"],
             {"channel": "Height"},
             id="load spm valid pass with channel kwarg.",
@@ -86,27 +97,22 @@ RESOURCES = BASE_DIR / "napari-afmreader" / "src" / "napari_afmreader_tests" / "
     ],
 )
 def test_get_reader_returns_callable(
+    napari_viewer: Viewer,
     caplog: pytest.LogCaptureFixture,
     filepath: str,
-    side_effect: list,
+    channel: str,
+    expected_result: bool,
     expected_messages: list,
     additional_reader_kwargs: dict,
 ):
     """Calling get_reader on numpy file returns callable."""
     messages_seen = []
 
-    def get_text_side_effect(*args, **_kwargs):
-        # Capture the message shown in the dialogue
-        _, message = args[1], args[2]
-        messages_seen.append(message)
-        # Second call returns the test's desired input
-        return side_effect[0]
-
     # simulate QtPy dialogue box as this causes pytest to crash - need to add patch to where it is called
-    with patch(
-        "napari_afmreader._reader.QInputDialog.getItem",
-        side_effect=get_text_side_effect,
-    ):
+    with patch("napari_afmreader._reader.QInputDialog") as mock_dialog_class:
+        mock_instance = mock_dialog_class.return_value  # the object returned by QInputDialog(None)
+        mock_instance.exec.return_value = expected_result
+        mock_instance.textValue.return_value = channel
         # try to read it in
         reader = napari_get_reader(filepath)
 
@@ -140,14 +146,13 @@ def test_get_reader_returns_callable(
         pytest.param(str(RESOURCES / "file.asd"), id="Cancelled dialogue box."),
     ],
 )
-def test_get_reader_cancel_box(filepath: str):
+def test_get_reader_cancel_box(napari_viewer: Viewer, filepath: str):
     """Cancel dialogue box returns None."""
     # simulate QtPy dialogue box as this causes pytest to crash - need to add patch to where it is called
-    with patch(
-        "napari_afmreader._reader.QInputDialog.getItem",
-        side_effect=[("TP", False)],
-    ):
-        # try to read it in
+    with patch("napari_afmreader._reader.QInputDialog") as mock_dialog_class:
+        mock_instance = mock_dialog_class.return_value
+        mock_instance.exec.return_value = 0
+
         reader = napari_get_reader(filepath)
         assert reader(filepath) is None
 
