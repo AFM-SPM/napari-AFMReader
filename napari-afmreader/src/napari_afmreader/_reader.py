@@ -5,7 +5,7 @@ from pathlib import Path
 from AFMReader import general_loader
 from loguru import logger
 from magicgui.widgets import Combobox, create_widget
-from napari import current_viewer
+from napari import current_viewer  # pylint: disable=no-name-in-module
 from napari_afmreader._alerts import LoadingWidget
 from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QComboBox,
@@ -84,6 +84,7 @@ def reader_function(path, channel=None):
         (data, metadata, layer_type="image"), where 'data' is a numpy array,
         'metadata' is a dict the filepath and pixel to nanometre scaling ratio.
     """
+    # pylint: disable=too-many-locals,global-statement
     # Global afmreader_id used to assign a unique id to each loaded image layer for tracking in the plugin
     global afmreader_id, image_options_widget
     # Handle both a string and a list of strings
@@ -103,8 +104,9 @@ def reader_function(path, channel=None):
         available_channels = loader.get_available_channels()
         params = None
 
-        # If loader returns a tuple, it means there are required kwargs that need to be filled before loading the channels
-        # so we open a dialog to get those kwargs from the user before proceeding to channel selection
+        # If loader returns a tuple, it means there are required kwargs that need to be filled
+        # before loading the channels, so we open a dialog to get those kwargs from the user
+        # before proceeding to channel selection
         if isinstance(available_channels, tuple):
             required_kwargs = available_channels[1]
             available_channels = available_channels[0]
@@ -119,7 +121,8 @@ def reader_function(path, channel=None):
         available_channels = available_channels.keys() if isinstance(available_channels, dict) else available_channels
 
         if available_channels != []:
-            # If there are channels available for the file, prompt the user to select a channel to load with an input dialog
+            # If there are channels available for the file, prompt the user to select
+            # a channel to load with an input dialog
             label = "Available channels:"
             message = "Select a channel to load:"
             dialog = QInputDialog(None)
@@ -163,7 +166,7 @@ def reader_function(path, channel=None):
     return [(image, add_kwargs, layer_type)]
 
 
-class DynamicKwargsDialog(QDialog):
+class DynamicKwargsDialog(QDialog):  # pylint: disable=too-few-public-methods
     """
     Dialog to dynamically generate input fields for required kwargs.
 
@@ -178,6 +181,19 @@ class DynamicKwargsDialog(QDialog):
     """
 
     def __init__(self, required_kwargs, filename, parent=None):
+        """
+        Initialize the dialog with dynamic input fields based on required kwargs.
+
+        Parameters
+        ----------
+        required_kwargs : dict
+            A dictionary of required kwargs where keys are the kwarg names and values are their expected
+            types or options.
+        filename : str
+            The name of the file for which the parameters are being requested.
+        parent : QWidget, optional
+            The parent widget for the dialog.
+        """
         super().__init__(parent)
         self.setWindowTitle(f"Enter Required Parameters for {filename}")
         self.setLayout(QVBoxLayout())
@@ -241,10 +257,7 @@ class DynamicKwargsDialog(QDialog):
 
 
 def update_image_options_widget():
-    """
-    Update the channel selector widget with the available channels for the currently selected layer.
-    """
-    global image_options_widget
+    """Update the channel selector widget with the available channels for the currently selected layer."""
     if image_options_widget is not None:
         image_options_widget.get_loaded_data(None)
 
@@ -276,7 +289,7 @@ def get_loaded_image(layer_id: int | None):
     return None
 
 
-class LoadedImage:
+class LoadedImage:  # pylint: disable=too-many-instance-attributes
     """
     Class to manage loaded AFM images, their channels, and associated metadata.
 
@@ -288,6 +301,8 @@ class LoadedImage:
         The ID of the layer associated with this loaded image.
     required_kwargs : dict, optional
         A dictionary of required keyword arguments for loading the image.
+    flip_image : bool, optional
+        Whether to flip the image vertically when loading. Defaults to True.
     """
 
     def add_channel_image(self, channel):
@@ -322,6 +337,7 @@ class LoadedImage:
             image, px2nm = loaded_data
         else:
             logger.error(f"Unexpected data length returned from loader: {len(loaded_data)}")
+            return
 
         self.image_channels[channel] = {"image": image, "px2nm": px2nm}
 
@@ -348,13 +364,24 @@ class LoadedImage:
         update_image_options_widget()
 
     def __init__(self, loader, layer_id, required_kwargs=None, flip_image: bool = True):
-        global loaded_images
+        """
+        Initialize the LoadedImage instance.
 
+        Parameters
+        ----------
+        loader : object
+            The loader object used to load image data.
+        layer_id : int
+            The ID of the layer associated with this loaded image.
+        required_kwargs : dict, optional
+            A dictionary of required keyword arguments for loading the image.
+        flip_image : bool, optional
+            Whether to flip the image vertically when loading. Defaults to True.
+        """
         # Get relevant information from the loader to initialize the LoadedImage instance
         self.loader = loader
         self.path = loader.filepath
         self.viewer = current_viewer()
-        # TODO need to implement this attribute actually doing something
         self.flip_image = flip_image
         self.loading_widget = LoadingWidget(self.viewer)
         self.loading_widget.start(f"Fetching channels from {self.path.stem}.")
@@ -403,6 +430,19 @@ class LoadedImage:
         self.current_channel = channel
 
     def get_map(self, channel=None):
+        """
+        Get the image data for the specified channel, loading it if it hasn't been loaded yet.
+
+        Parameters
+        ----------
+        channel : str, optional
+            The name of the channel to retrieve.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the image data and pixel-to-nanometer scaling factor for the specified channel.
+        """
         # If the requested channel's image data hasn't been loaded yet, load it with AFMReader
         if channel not in self.image_channels and (channel is not None or "default" not in self.image_channels):
             self.add_channel_image(channel)
@@ -489,6 +529,14 @@ class ImageOptions(QWidget):
     """
 
     def __init__(self, viewer):
+        """
+        Initialize the ImageOptions widget.
+
+        Parameters
+        ----------
+        viewer : napari.Viewer
+            The napari viewer instance to interact with.
+        """
         super().__init__()
         self.viewer = viewer
         self.setLayout(QVBoxLayout())
@@ -505,7 +553,8 @@ class ImageOptions(QWidget):
         self.channel_selector = QComboBox()
         self.selected_layer = None
 
-        # Call get_loaded_data once to initialize the widget based on the current selection (if any) when the widget is created
+        # Call get_loaded_data once to initialize the widget based on the current
+        # selection (if any) when the widget is created
         self.get_loaded_data(None)
 
         self.layout().addWidget(self.channel_selector)
@@ -523,6 +572,7 @@ class ImageOptions(QWidget):
         event : napari.utils.events.Event
             The event object containing information about the layer selection change.
         """
+        # pylint: disable=unused-argument
         # Get the currently selected layer in the viewer
         self.selected_layer = self.viewer.layers.selection.active
         temp_selected_channel = self.selected_channel

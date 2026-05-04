@@ -106,6 +106,7 @@ def test_get_reader_returns_callable(
     additional_reader_kwargs: dict,
 ):
     """Calling get_reader on numpy file returns callable."""
+    # pylint: disable=too-many-positional-arguments,too-many-locals,unused-argument
     messages_seen = []
 
     # simulate QtPy dialogue box as this causes pytest to crash - need to add patch to where it is called
@@ -148,6 +149,7 @@ def test_get_reader_returns_callable(
 )
 def test_get_reader_cancel_box(napari_viewer: Viewer, filepath: str):
     """Cancel dialogue box returns None."""
+    # pylint: disable=unused-argument
     # simulate QtPy dialogue box as this causes pytest to crash - need to add patch to where it is called
     with patch("napari_afmreader._reader.QInputDialog") as mock_dialog_class:
         mock_instance = mock_dialog_class.return_value
