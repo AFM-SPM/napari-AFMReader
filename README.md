@@ -47,6 +47,8 @@ open-source software and a GUI!
 | `.top`          | ✅                     | Homemade top format.     |
 | `.topostats`    | ✅                     | topostats output format. |
 
+<!-- markdownlint-enable MD060 -->
+
 ## Installation
 
 ### Via Napari-Hub
