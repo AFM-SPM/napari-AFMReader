@@ -42,30 +42,26 @@ class LoadingWidget(QWidget):
 
         # Create container with rounded background
         loading_container = QWidget()
-        loading_container.setStyleSheet(
-            """
+        loading_container.setStyleSheet("""
             QWidget {
                 background-color: rgba(40, 40, 40, 240);
                 border-radius: 15px;
                 padding: 30px;
             }
-        """
-        )
+        """)
 
         loading_layout = QVBoxLayout()
         loading_layout.setAlignment(Qt.AlignCenter)
 
         self.loading_label = QLabel()
-        self.loading_label.setStyleSheet(
-            """
+        self.loading_label.setStyleSheet("""
             QLabel {
                 color: white;
                 font-size: 18px;
                 font-weight: bold;
                 background-color: transparent;
             }
-        """
-        )
+        """)
         self.loading_label.setAlignment(Qt.AlignCenter)
 
         loading_layout.addWidget(self.loading_label)
