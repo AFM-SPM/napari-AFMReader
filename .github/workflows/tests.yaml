@@ -29,6 +29,11 @@ jobs:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ["3.10", "3.11", "3.12"]
+    env:
+      QT_QPA_PLATFORM: offscreen
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      QT_OPENGL: software
+      XDG_RUNTIME_DIR: /tmp
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python
