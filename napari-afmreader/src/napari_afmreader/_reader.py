@@ -92,33 +92,38 @@ def reader_function(path, channel=None):
 
     # Create a loader instance for the first file path using AFMReader's general_loader
     loader = general_loader.LoadFile(paths[0], None)
+    loading_widget = LoadingWidget(current_viewer())
+    loading_widget.start(f"Opening {paths[0].stem}.")
 
-    # Create a LoadedImage instance to manage the loaded image, its channels, and associated metadata
-    loaded_image = LoadedImage(loader, afmreader_id)
+    # Get any additional required parameters for loading the file from the loader
+    additional_params = loader.get_additional_params()
+    loading_widget.stop()
+
+    if additional_params:
+        dialog = DynamicKwargsDialog(additional_params, filename=paths[0].name)
+
+        # This opens the window and waits
+        if dialog.exec():
+            # User clicked OK
+            params = dialog.get_values()
+            additional_params.update(params)
 
     if channel:
         # No need to prompt user to select a channel, load the specified channel directly
+        loaded_image = LoadedImage(loader, afmreader_id, required_kwargs=additional_params)
         image, metadata, px2nm = loaded_image.get_image_data(channel=channel)
     else:
         # If a channel isn't selected, open an input dialog so the user can select one
-        available_channels = loader.get_available_channels()
-        params = None
-
-        # If loader returns a tuple, it means there are required kwargs that need to be filled
-        # before loading the channels, so we open a dialog to get those kwargs from the user
-        # before proceeding to channel selection
-        if isinstance(available_channels, tuple):
-            required_kwargs = available_channels[1]
-            available_channels = available_channels[0]
-            dialog = DynamicKwargsDialog(required_kwargs, filename=paths[0].name)
-
-            # This opens the window and waits
-            if dialog.exec():
-                # User clicked OK
-                params = dialog.get_values()
-                loaded_image.set_required_kwargs(params)
+        loading_widget.start(f"Fetching channels from {paths[0].stem} and processing parameters.")
+        available_channels = loader.get_available_channels(kwargs=additional_params)
+        loading_widget.stop()
 
         available_channels = available_channels.keys() if isinstance(available_channels, dict) else available_channels
+
+        # Create a LoadedImage instance to manage the loaded image, its channels, and associated metadata
+        loaded_image = LoadedImage(
+            loader, afmreader_id, available_channels=available_channels, required_kwargs=additional_params
+        )
 
         if available_channels != []:
             # If there are channels available for the file, prompt the user to select
@@ -299,11 +304,57 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         The loader instance used to load AFM files.
     layer_id : int
         The ID of the layer associated with this loaded image.
+    available_channels : list of str, optional
+        A list of available channel names for the image. If not provided, it will be fetched from the loader.
     required_kwargs : dict, optional
         A dictionary of required keyword arguments for loading the image.
     flip_image : bool, optional
         Whether to flip the image vertically when loading. Defaults to True.
     """
+
+    # pylint: disable=too-many-positional-arguments
+    def __init__(self, loader, layer_id, available_channels=None, required_kwargs=None, flip_image: bool = True):
+        """
+        Initialize the LoadedImage instance.
+
+        Parameters
+        ----------
+        loader : object
+            The loader object used to load image data.
+        layer_id : int
+            The ID of the layer associated with this loaded image.
+        available_channels : list of str, optional
+            A list of available channel names.
+        required_kwargs : dict, optional
+            A dictionary of required keyword arguments for loading the image.
+        flip_image : bool, optional
+            Whether to flip the image vertically when loading. Defaults to True.
+        """
+        # Get relevant information from the loader to initialize the LoadedImage instance
+        self.loader = loader
+        self.path = loader.filepath
+        self.viewer = current_viewer()
+        self.flip_image = flip_image
+        self.loading_widget = LoadingWidget(self.viewer)
+        self.loading_widget.start(f"Fetching channels from {self.path.stem}.")
+        self.available_channels = (
+            available_channels if available_channels is not None else loader.get_available_channels()
+        )
+        self.loading_widget.stop()
+        self.available_channels = (
+            list(self.available_channels.keys())
+            if isinstance(self.available_channels, dict)
+            else self.available_channels
+        )
+
+        # Set layer id (used for tracking in loaded images)
+        self.layer_id = layer_id
+
+        # Initialize state variables for the LoadedImage instance
+        self.current_channel = None
+        self.image_channels = {}
+        self.curves_data = None
+        self.required_kwargs = required_kwargs
 
     def add_channel_image(self, channel):
         """
@@ -362,48 +413,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         if channel_name not in self.available_channels:
             self.available_channels.append(channel_name)
         update_image_options_widget()
-
-    def __init__(self, loader, layer_id, required_kwargs=None, flip_image: bool = True):
-        """
-        Initialize the LoadedImage instance.
-
-        Parameters
-        ----------
-        loader : object
-            The loader object used to load image data.
-        layer_id : int
-            The ID of the layer associated with this loaded image.
-        required_kwargs : dict, optional
-            A dictionary of required keyword arguments for loading the image.
-        flip_image : bool, optional
-            Whether to flip the image vertically when loading. Defaults to True.
-        """
-        # Get relevant information from the loader to initialize the LoadedImage instance
-        self.loader = loader
-        self.path = loader.filepath
-        self.viewer = current_viewer()
-        self.flip_image = flip_image
-        self.loading_widget = LoadingWidget(self.viewer)
-        self.loading_widget.start(f"Fetching channels from {self.path.stem}.")
-        self.available_channels = loader.get_available_channels()
-        self.loading_widget.stop()
-        if isinstance(self.available_channels, tuple):
-            self.required_kwargs = self.available_channels[1]
-            self.available_channels = self.available_channels[0]
-        self.available_channels = (
-            list(self.available_channels.keys())
-            if isinstance(self.available_channels, dict)
-            else self.available_channels
-        )
-
-        # Set layer id (used for tracking in loaded images)
-        self.layer_id = layer_id
-
-        # Initialize state variables for the LoadedImage instance
-        self.current_channel = None
-        self.image_channels = {}
-        self.curves_data = None
-        self.required_kwargs = required_kwargs
 
     def get_available_channels(self):
         """
