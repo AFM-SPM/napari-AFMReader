@@ -6,6 +6,7 @@ from AFMReader import general_loader
 from loguru import logger
 from magicgui.widgets import Combobox, create_widget
 from napari import current_viewer  # pylint: disable=no-name-in-module
+from napari.layers import Image  # pylint: disable=no-name-in-module
 from napari_afmreader._alerts import LoadingWidget
 from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QComboBox,
@@ -380,19 +381,19 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         self.loading_widget.stop()
 
         # Extract data from the loaded data tuple returned by the loader.
-        if len(loaded_data) == 3:
+        if len(loaded_data) == 4:
             # Include curves data if it's returned by the loader
-            image, px2nm, self.curves_data = loaded_data
-        elif len(loaded_data) == 2:
-            # Otherwise, just extract the image and pixel to nanometer scaling factor
-            image, px2nm = loaded_data
+            image, px2nm, z_units, self.curves_data = loaded_data
+        elif len(loaded_data) == 3:
+            # Otherwise, just extract the image, pixel to nanometer scaling factor, and z_units
+            image, px2nm, z_units = loaded_data
         else:
             logger.error(f"Unexpected data length returned from loader: {len(loaded_data)}")
             return
 
-        self.image_channels[channel] = {"image": image, "px2nm": px2nm}
+        self.image_channels[channel] = {"image": image, "px2nm": px2nm, "z_units": z_units}
 
-    def add_custom_channel(self, channel_name, image_data):
+    def add_custom_channel(self, channel_name, image_data, z_units=None):
         """
         Add a custom channel with the specified name and image data.
 
@@ -402,14 +403,20 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             The name of the custom channel to add.
         image_data : numpy.ndarray
             The image data for the custom channel.
+        z_units : str, optional
+            The units for the z-axis of the custom channel. If None, the units of the current channel are used.
         """
         if channel_name in self.image_channels:
             logger.warning(f"Channel '{channel_name}' already exists. Overwriting existing channel.")
         self.image_channels[channel_name] = {
             "image": image_data,
             "px2nm": self.image_channels[self.current_channel]["px2nm"] if self.current_channel else 1,
+            "z_units": (
+                z_units
+                if z_units is not None
+                else (self.image_channels[self.current_channel]["z_units"] if self.current_channel else None)
+            ),
         }
-        print(f"Available channels: {self.available_channels}")
         if channel_name not in self.available_channels:
             self.available_channels.append(channel_name)
         update_image_options_widget()
@@ -450,14 +457,16 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         Returns
         -------
         tuple
-            A tuple containing the image data and pixel-to-nanometer scaling factor for the specified channel.
+            A tuple containing the image data, pixel-to-nanometer scaling factor, and z_units for the specified channel.
         """
         # If the requested channel's image data hasn't been loaded yet, load it with AFMReader
         if channel not in self.image_channels and (channel is not None or "default" not in self.image_channels):
             self.add_channel_image(channel)
         return_image = self.image_channels[channel]["image"] if channel in self.image_channels else None
         return_px2nm = self.image_channels[channel]["px2nm"] if channel in self.image_channels else None
-        return return_image, return_px2nm
+        return_z_units = self.image_channels[channel]["z_units"] if channel in self.image_channels else None
+
+        return return_image, return_px2nm, return_z_units
 
     def get_image_data(self, channel=None):
         """
@@ -489,8 +498,10 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         metadata = {
             "image_path": self.path,
             "px2nm": self.image_channels[channel]["px2nm"],
+            "channel": channel,
             "afmreader_id": self.layer_id,
             "available_channels": self.available_channels,
+            "z_units": self.image_channels[channel]["z_units"],
         }
 
         # If curves data is available, add it to the metadata along with available channels and any curves metadata
@@ -635,8 +646,9 @@ class ImageOptions(QWidget):
             self.selected_layer.data = image
             self.selected_layer.metadata = metadata
 
-            # Reset the contrast limits of the layer to fit the new image data
-            self.selected_layer.reset_contrast_limits()
+            if isinstance(self.selected_layer, Image):
+                # Reset the contrast limits of the layer to fit the new image data
+                self.selected_layer.reset_contrast_limits()
         else:
             logger.debug("Selected layer is None, cannot update layer.")
 
