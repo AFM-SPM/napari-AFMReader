@@ -457,7 +457,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         Returns
         -------
         tuple
-            A tuple containing the image data, pixel-to-nanometer scaling factor, and z_units for the specified channel.
+            A tuple containing the image data, pixel-to-nanometer scaling factor, and z-axis units for the channel.
         """
         # If the requested channel's image data hasn't been loaded yet, load it with AFMReader
         if channel not in self.image_channels and (channel is not None or "default" not in self.image_channels):
@@ -465,7 +465,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         return_image = self.image_channels[channel]["image"] if channel in self.image_channels else None
         return_px2nm = self.image_channels[channel]["px2nm"] if channel in self.image_channels else None
         return_z_units = self.image_channels[channel]["z_units"] if channel in self.image_channels else None
-
         return return_image, return_px2nm, return_z_units
 
     def get_image_data(self, channel=None):
@@ -480,7 +479,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         Returns
         -------
         tuple
-            A tuple containing the image data, metadata dictionary, and pixel-to-nanometer scaling factor.
+            A tuple containing the image data, metadata dictionary, pixel-to-nanometer scaling factor, and z-axis units.
         """
         # If the requested channel's image data hasn't been loaded yet, load it with AFMReader
         if channel not in self.image_channels and (channel is not None or "default" not in self.image_channels):
@@ -513,7 +512,11 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             if len(self.curves_data) > 2:
                 metadata["force_curves_meta"] = self.curves_data[2]
 
-        return self.image_channels[channel]["image"], metadata, self.image_channels[channel]["px2nm"]
+        return (
+            self.image_channels[channel]["image"],
+            metadata,
+            self.image_channels[channel]["px2nm"],
+        )
 
     def set_required_kwargs(self, required_kwargs):
         """
