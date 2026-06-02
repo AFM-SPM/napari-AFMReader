@@ -505,12 +505,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
 
         # If curves data is available, add it to the metadata along with available channels and any curves metadata
         if self.curves_data:
-            metadata["force_curves"] = self.curves_data[0]
-            metadata["force_curves_units"] = self.curves_data[1]
-
-            # If force curves metadata is available, add it to the metadata dictionary as well.
-            if len(self.curves_data) > 2:
-                metadata["force_curves_meta"] = self.curves_data[2]
+            metadata["force_curves"] = self.curves_data
 
         return (
             self.image_channels[channel]["image"],
