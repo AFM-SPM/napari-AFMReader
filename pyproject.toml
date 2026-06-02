@@ -36,7 +36,7 @@ keywords = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-  "afmreader @ git+https://github.com/AFM-SPM/AFMReader.git@ahobbs7/jpk-qi-data",
+  "afmreader @ git+https://github.com/AFM-SPM/AFMReader.git@ahobbs7/include_units",
   "magicgui",
   "napari",
   "qtpy",
