@@ -45,9 +45,10 @@ def napari_get_reader(path: list | str):
         # so we are only going to look at the first file.
         path = path[0]
 
-    if not path.endswith(
+    if not path.lower().endswith(
         (
             ".asd",
+            ".ardf",
             ".gwy",
             ".ibw",
             ".jpk",
@@ -61,6 +62,7 @@ def napari_get_reader(path: list | str):
             ".bin",
         )
     ):
+        print(f"File {path} is not a recognized AFM file format.")
         return None
 
     # otherwise we return the *function* that can read ``path``.
