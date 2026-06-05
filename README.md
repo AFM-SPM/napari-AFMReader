@@ -35,20 +35,17 @@ You can drag and drop your favourite AFM image files directly into the Napari vi
 analysis community have developed over at the [Napari Hub](https://www.napari-hub.org/) to analyse your images using
 open-source software and a GUI!
 
-<!-- @ns-rse : table fails MD060 (https://github.com/DavidAnson/markdownlint/blob/main/doc/md060.md) -->
-<!--           but I can not see/understand why.                                                     -->
-<!-- markdownlint-disable MD060 -->
-
-| File Extension | Supported by AFMReader | Description              |
-| -------------- | ---------------------- | ------------------------ |
-| `.asd`         | ✅                     | High-speed AFM format.   |
-| `.gwy`         | ✅                     | Gwyddion saved format.   |
-| `.ibw`         | ✅                     | Igor binary-wave format. |
-| `.jpk`         | ✅                     | JPK instruments format.  |
-| `.spm`         | ✅                     | Bruker spm format.       |
-| `.stp`         | ✅                     | Homemade stp format.     |
-| `.top`         | ✅                     | Homemade top format.     |
-| `.topostats`   | ✅                     | topostats output format. |
+| File Extension  | Supported by AFMReader | Description              |
+| --------------- | ---------------------- | ------------------------ |
+| `.asd`          | ✅                     | High-speed AFM format.   |
+| `.gwy`          | ✅                     | Gwyddion saved format.   |
+| `.ibw`          | ✅                     | Igor binary-wave format. |
+| `.jpk`          | ✅                     | JPK instruments format.  |
+| `.jpk-qi-image` | ✅                     | JPK instruments format.  |
+| `.spm`          | ✅                     | Bruker spm format.       |
+| `.stp`          | ✅                     | Homemade stp format.     |
+| `.top`          | ✅                     | Homemade top format.     |
+| `.topostats`    | ✅                     | topostats output format. |
 
 <!-- markdownlint-enable MD060 -->
 
@@ -115,12 +112,14 @@ This package should be fairly straight-forward and intuitive to use, requiring y
 
 1. Drag and drop your supported AFM file into the Napari Viewer.
 
-2. Type in the name of the channel you would like to use. You may not need to specify a channel for e.g. `.stp`, or the
-   channel may refer to image key in the `.napari-afmreader` file.\*.
+2. For certain file formats (currently `.jpk-qi-data` and `.bin`), a dialog window will open allowing you to choose
+   special loading parameters for that file.
 
-   \*_Possible channel names will not appear at first due to the order in which AFMReader processes an image. Thus,
-   when provided with an non-existent channel name, the dialogue box will then return a list of possible channels to
-   choose from._
+3. Select the name of the channel you would like to use. You may not need to specify a channel for e.g. `.stp`, or the
+   channel may refer to image key in the `.napari-afmreader` file.
+
+4. Once loaded the channel for the image can be changed to one of the other options using the widget in the dock on
+   the right.
 
 ## Licence
 

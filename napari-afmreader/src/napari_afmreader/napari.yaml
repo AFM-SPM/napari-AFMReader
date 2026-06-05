@@ -19,8 +19,12 @@ contributions:
           "*.gwy",
           "*.ibw",
           "*.jpk",
+          "*.jpk-qi-image",
+          "*.jpk-qi-data",
           "*.spm",
+          "*.h5-jpk",
           "*.stp",
           "*.top",
           "*.topostats",
+          "*.bin",
         ]
