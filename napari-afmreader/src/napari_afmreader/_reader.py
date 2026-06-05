@@ -328,16 +328,10 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         # Stop the loading widget once data is loaded
         self.loading_widget.stop()
 
-        # Extract data from the loaded data tuple returned by the loader.
-        if len(loaded_data) == 3:
-            # Include curves data if it's returned by the loader
-            image, px2nm, self.curves_data = loaded_data
-        elif len(loaded_data) == 2:
-            # Otherwise, just extract the image and pixel to nanometer scaling factor
-            image, px2nm = loaded_data
-        else:
-            logger.error(f"Unexpected data length returned from loader: {len(loaded_data)}")
-            return
+        image = loaded_data.image
+        px2nm = loaded_data.px2nm
+        if loaded_data.curves_dataset is not None:
+            self.curves_data = loaded_data.curves_dataset
 
         self.image_channels[channel] = {"image": image, "px2nm": px2nm}
 
@@ -358,7 +352,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             "image": image_data,
             "px2nm": self.image_channels[self.current_channel]["px2nm"] if self.current_channel else 1,
         }
-        print(f"Available channels: {self.available_channels}")
         if channel_name not in self.available_channels:
             self.available_channels.append(channel_name)
         update_image_options_widget()
