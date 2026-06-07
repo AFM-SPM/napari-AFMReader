@@ -108,6 +108,10 @@ def reader_function(path, channel=None):
             # User clicked OK
             params = dialog.get_values()
             additional_params.update(params)
+            if "save_as_h5" in additional_params and additional_params["save_as_h5"]:
+                loading_widget.start(f"Saving {paths[0].stem} as h5 file.")
+                loader.save_to_h5()
+                loading_widget.stop()
 
     if channel:
         # No need to prompt user to select a channel, load the specified channel directly
@@ -380,16 +384,11 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         # Stop the loading widget once data is loaded
         self.loading_widget.stop()
 
-        # Extract data from the loaded data tuple returned by the loader.
-        if len(loaded_data) == 4:
-            # Include curves data if it's returned by the loader
-            image, px2nm, z_units, self.curves_data = loaded_data
-        elif len(loaded_data) == 3:
-            # Otherwise, just extract the image, pixel to nanometer scaling factor, and z_units
-            image, px2nm, z_units = loaded_data
-        else:
-            logger.error(f"Unexpected data length returned from loader: {len(loaded_data)}")
-            return
+        image = loaded_data.image
+        px2nm = loaded_data.px2nm
+        z_units = loaded_data.z_units
+        if loaded_data.curves_dataset is not None:
+            self.curves_data = loaded_data.curves_dataset
 
         self.image_channels[channel] = {"image": image, "px2nm": px2nm, "z_units": z_units}
 
