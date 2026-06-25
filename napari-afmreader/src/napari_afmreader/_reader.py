@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from AFMReader import general_loader
+from AFMReader.data_classes import AFMLoad
 from loguru import logger
 from magicgui.widgets import Combobox, create_widget
 from napari import current_viewer  # pylint: disable=no-name-in-module
@@ -340,35 +341,42 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         flip_image : bool, optional
             Whether to flip the image vertically when loading. Defaults to True.
         """
-        # Get relevant information from the loader to initialize the LoadedImage instance
+
         self.loader = loader
-        self.path = loader.filepath
+        # Set layer id (used for tracking in loaded images)
+        self.layer_id = layer_id
+        self.init_from_loader(available_channels=available_channels, required_kwargs=required_kwargs, flip_image=flip_image)
+
+
+    def init_from_loader(self, available_channels=None, required_kwargs=None, flip_image: bool = True, headless=False):
+        # Get relevant information from the loader to initialize the LoadedImage instance
+        self.path = self.loader.filepath
         self.viewer = current_viewer()
         self.flip_image = flip_image
         self.loading_widget = LoadingWidget(self.viewer)
-        self.loading_widget.start(f"Fetching channels from {self.path.stem}.")
+        if not headless:
+            self.loading_widget.start(f"Fetching channels from {self.path.stem}.")
         try:
             self.available_channels = (
-                available_channels if available_channels is not None else loader.get_available_channels()
+                available_channels if available_channels is not None else self.loader.get_available_channels()
             )
         finally:
-            self.loading_widget.stop()
+            if not headless:
+                self.loading_widget.stop()
         self.available_channels = (
             list(self.available_channels.keys())
             if isinstance(self.available_channels, dict)
             else list(self.available_channels)
         )
 
-        # Set layer id (used for tracking in loaded images)
-        self.layer_id = layer_id
 
         # Initialize state variables for the LoadedImage instance
         self.current_channel = None
-        self.image_channels = {}
+        self.image_channels: dict[str, AFMLoad] = {}
         self.curves_data = None
         self.required_kwargs = required_kwargs
 
-    def add_channel_image(self, channel):
+    def add_channel_image(self, channel, headless=False):
         """
         Load the specified channel's image data and store it along with metadata.
 
@@ -381,23 +389,22 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             self.viewer = current_viewer()
 
         # Start the loading widget as loading from AFMReader can take some time if lots of curve data
-        self.loading_widget.start(f"Loading {self.path.stem}. This may take a moment.")
+        if not headless:
+            self.loading_widget.start(f"Loading {self.path.stem}. This may take a moment.")
         try:
             loaded_data = self.loader.load(channel=channel, kwargs=self.required_kwargs)
         finally:
-            self.loading_widget.stop()
+            if not headless:
+                self.loading_widget.stop()
 
         # Default the channel name if no channels exist for the file so clear to user
         if channel is None:
             channel = "default"
 
-        image = loaded_data.image
-        px2nm = loaded_data.px2nm
-        z_units = loaded_data.z_units
         if loaded_data.curves_dataset is not None:
             self.curves_data = loaded_data.curves_dataset
 
-        self.image_channels[channel] = {"image": image, "px2nm": px2nm, "z_units": z_units}
+        self.image_channels[channel] = loaded_data
 
     def add_custom_channel(self, channel_name, image_data, z_units=None):
         """
@@ -414,15 +421,11 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         """
         if channel_name in self.image_channels:
             logger.warning(f"Channel '{channel_name}' already exists. Overwriting existing channel.")
-        self.image_channels[channel_name] = {
-            "image": image_data,
-            "px2nm": self.image_channels[self.current_channel]["px2nm"] if self.current_channel else 1,
-            "z_units": (
-                z_units
-                if z_units is not None
-                else (self.image_channels[self.current_channel]["z_units"] if self.current_channel else None)
-            ),
-        }
+        z_units = z_units if z_units is not None else (self.image_channels[self.current_channel].z_units if self.current_channel else None)
+        px2nm = self.image_channels[self.current_channel].px2nm if self.current_channel else 1
+        # TODO do we want to add all the other parameters like timestamps, metadata, curves_dataset?
+        # May lead to large memory usage? however alligns with the rest of the current channels
+        self.image_channels[channel_name] = AFMLoad(image=image_data, px2nm=px2nm, z_units=z_units)
         if channel_name not in self.available_channels:
             self.available_channels.append(channel_name)
         update_image_options_widget()
@@ -468,9 +471,9 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         # If the requested channel's image data hasn't been loaded yet, load it with AFMReader
         if channel not in self.image_channels and (channel is not None or "default" not in self.image_channels):
             self.add_channel_image(channel)
-        return_image = self.image_channels[channel]["image"] if channel in self.image_channels else None
-        return_px2nm = self.image_channels[channel]["px2nm"] if channel in self.image_channels else None
-        return_z_units = self.image_channels[channel]["z_units"] if channel in self.image_channels else None
+        return_image = self.image_channels[channel].image if channel in self.image_channels else None
+        return_px2nm = self.image_channels[channel].px2nm if channel in self.image_channels else None
+        return_z_units = self.image_channels[channel].z_units if channel in self.image_channels else None
         return return_image, return_px2nm, return_z_units
 
     def get_image_data(self, channel=None):
@@ -502,11 +505,11 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         # Construct metadata dictionary for the layer.
         metadata = {
             "image_path": self.path,
-            "px2nm": self.image_channels[channel]["px2nm"],
+            "px2nm": self.image_channels[channel].px2nm,
             "channel": channel,
             "afmreader_id": self.layer_id,
             "available_channels": self.available_channels,
-            "z_units": self.image_channels[channel]["z_units"],
+            "z_units": self.image_channels[channel].z_units,
         }
 
         # If curves data is available, add it to the metadata along with available channels and any curves metadata
@@ -514,9 +517,9 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             metadata["force_curves"] = self.curves_data
 
         return (
-            self.image_channels[channel]["image"],
+            self.image_channels[channel].image,
             metadata,
-            self.image_channels[channel]["px2nm"],
+            self.image_channels[channel].px2nm,
         )
 
     def set_required_kwargs(self, required_kwargs):
@@ -540,6 +543,19 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             The name of the currently selected channel.
         """
         return self.current_channel
+
+    def get_current_load(self):
+        """
+        Get the AFMLoad instance for the currently selected channel.
+
+        Returns
+        -------
+        AFMLoad
+            The AFMLoad instance for the currently selected channel.
+        """
+        if self.current_channel in self.image_channels:
+            return self.image_channels[self.current_channel]
+        return None
 
 
 class ImageOptions(QWidget):
