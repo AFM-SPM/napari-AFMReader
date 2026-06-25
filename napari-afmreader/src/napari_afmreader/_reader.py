@@ -512,10 +512,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             "z_units": self.image_channels[channel].z_units,
         }
 
-        # If curves data is available, add it to the metadata along with available channels and any curves metadata
-        if self.curves_data:
-            metadata["force_curves"] = self.curves_data
-
         return (
             self.image_channels[channel].image,
             metadata,
