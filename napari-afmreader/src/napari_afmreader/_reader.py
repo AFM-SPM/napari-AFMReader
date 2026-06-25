@@ -341,12 +341,12 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         flip_image : bool, optional
             Whether to flip the image vertically when loading. Defaults to True.
         """
-
         self.loader = loader
         # Set layer id (used for tracking in loaded images)
         self.layer_id = layer_id
-        self.init_from_loader(available_channels=available_channels, required_kwargs=required_kwargs, flip_image=flip_image)
-
+        self.init_from_loader(
+            available_channels=available_channels, required_kwargs=required_kwargs, flip_image=flip_image
+        )
 
     def init_from_loader(self, available_channels=None, required_kwargs=None, flip_image: bool = True, headless=False):
         # Get relevant information from the loader to initialize the LoadedImage instance
@@ -368,7 +368,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             if isinstance(self.available_channels, dict)
             else list(self.available_channels)
         )
-
 
         # Initialize state variables for the LoadedImage instance
         self.current_channel = None
@@ -421,7 +420,11 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         """
         if channel_name in self.image_channels:
             logger.warning(f"Channel '{channel_name}' already exists. Overwriting existing channel.")
-        z_units = z_units if z_units is not None else (self.image_channels[self.current_channel].z_units if self.current_channel else None)
+        z_units = (
+            z_units
+            if z_units is not None
+            else (self.image_channels[self.current_channel].z_units if self.current_channel else None)
+        )
         px2nm = self.image_channels[self.current_channel].px2nm if self.current_channel else 1
         # TODO do we want to add all the other parameters like timestamps, metadata, curves_dataset?
         # May lead to large memory usage? however alligns with the rest of the current channels
