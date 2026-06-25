@@ -95,10 +95,11 @@ def reader_function(path, channel=None):
     loader = general_loader.LoadFile(paths[0], None)
     loading_widget = LoadingWidget(current_viewer())
     loading_widget.start(f"Opening {paths[0].stem}.")
-
-    # Get any additional required parameters for loading the file from the loader
-    additional_params = loader.get_additional_params()
-    loading_widget.stop()
+    try:
+        # Get any additional required parameters for loading the file from the loader
+        additional_params = loader.get_additional_params()
+    finally:
+        loading_widget.stop()
 
     if additional_params:
         dialog = DynamicKwargsDialog(additional_params, filename=paths[0].name)
@@ -110,8 +111,10 @@ def reader_function(path, channel=None):
             additional_params.update(params)
             if "save_as_h5" in additional_params and additional_params["save_as_h5"]:
                 loading_widget.start(f"Saving {paths[0].stem} as h5 file.")
-                loader.save_to_h5()
-                loading_widget.stop()
+                try:
+                    loader.save_to_h5()
+                finally:
+                    loading_widget.stop()
 
     if channel:
         # No need to prompt user to select a channel, load the specified channel directly
@@ -120,8 +123,10 @@ def reader_function(path, channel=None):
     else:
         # If a channel isn't selected, open an input dialog so the user can select one
         loading_widget.start(f"Fetching channels from {paths[0].stem} and processing parameters.")
-        available_channels = loader.get_available_channels(kwargs=additional_params)
-        loading_widget.stop()
+        try:
+            available_channels = loader.get_available_channels(kwargs=additional_params)
+        finally:
+            loading_widget.stop()
 
         available_channels = available_channels.keys() if isinstance(available_channels, dict) else available_channels
 
@@ -342,10 +347,12 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         self.flip_image = flip_image
         self.loading_widget = LoadingWidget(self.viewer)
         self.loading_widget.start(f"Fetching channels from {self.path.stem}.")
-        self.available_channels = (
-            available_channels if available_channels is not None else loader.get_available_channels()
-        )
-        self.loading_widget.stop()
+        try:
+            self.available_channels = (
+                available_channels if available_channels is not None else loader.get_available_channels()
+            )
+        finally:
+            self.loading_widget.stop()
         self.available_channels = (
             list(self.available_channels.keys())
             if isinstance(self.available_channels, dict)
@@ -375,14 +382,14 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
 
         # Start the loading widget as loading from AFMReader can take some time if lots of curve data
         self.loading_widget.start(f"Loading {self.path.stem}. This may take a moment.")
-        loaded_data = self.loader.load(channel=channel, kwargs=self.required_kwargs)
+        try:
+            loaded_data = self.loader.load(channel=channel, kwargs=self.required_kwargs)
+        finally:
+            self.loading_widget.stop()
 
         # Default the channel name if no channels exist for the file so clear to user
         if channel is None:
             channel = "default"
-
-        # Stop the loading widget once data is loaded
-        self.loading_widget.stop()
 
         image = loaded_data.image
         px2nm = loaded_data.px2nm
