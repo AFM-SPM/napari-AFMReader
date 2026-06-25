@@ -349,7 +349,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         self.available_channels = (
             list(self.available_channels.keys())
             if isinstance(self.available_channels, dict)
-            else self.available_channels
+            else list(self.available_channels)
         )
 
         # Set layer id (used for tracking in loaded images)
