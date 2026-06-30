@@ -46,9 +46,10 @@ def napari_get_reader(path: list | str):
         # so we are only going to look at the first file.
         path = path[0]
 
-    if not path.endswith(
+    if not path.lower().endswith(
         (
             ".asd",
+            ".ardf",
             ".gwy",
             ".ibw",
             ".jpk",
