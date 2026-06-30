@@ -9,6 +9,28 @@ from qtpy.QtWidgets import (
 )
 
 
+def _viewer_window_widget(viewer):
+    """
+    Return the napari Qt main window widget, if one is available.
+
+    Parameters
+    ----------
+    viewer : napari.Viewer or None
+        The napari viewer instance to inspect.
+
+    Returns
+    -------
+    QWidget or None
+        The Qt main window widget when it is available.
+    """
+    if viewer is None:
+        return None
+    window = getattr(viewer, "window", None)
+    if window is None:
+        return None
+    return getattr(window, "_qt_window", None)
+
+
 class LoadingWidget(QWidget):
     """
     A semi-transparent overlay for napari viewer.
@@ -29,7 +51,7 @@ class LoadingWidget(QWidget):
             The napari viewer instance to attach the overlay to.
         """
         # Parent to the main napari window so it covers everything
-        super().__init__(viewer.window._qt_window)
+        super().__init__(_viewer_window_widget(viewer))
         self.viewer = viewer
 
         # Make overlay semi-transparent
@@ -86,8 +108,18 @@ class LoadingWidget(QWidget):
         self.message = message
         self.loading_label.setText(f"{self.message}")
 
-        # Cover the entire napari window
-        self.setGeometry(self.parent().rect())
+        parent = self.parentWidget()
+        if parent is None:
+            parent = _viewer_window_widget(self.viewer)
+            if parent is not None:
+                self.setParent(parent)
+
+        # Cover the entire napari window when possible. If the viewer window is
+        # unavailable, show a standalone loading widget instead of crashing.
+        if parent is not None:
+            self.setGeometry(parent.rect())
+        else:
+            self.adjustSize()
 
         self.show()
         self.raise_()  # Bring to front
