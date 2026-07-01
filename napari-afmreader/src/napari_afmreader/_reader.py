@@ -24,6 +24,10 @@ afmreader_id = 0
 loaded_images = []
 image_options_widget = None
 
+# Set to keep track of viewers that have already connected the layer cleanup
+# callback to avoid duplicate connections between the potential for multiple viewers
+layer_cleanup_connected_viewers = set()
+
 
 def napari_get_reader(path: list | str):
     """
@@ -93,16 +97,19 @@ def reader_function(path, channel=None):
     # Handle both a string and a list of strings
     paths = [Path(path)] if isinstance(path, str) else Path(path)
 
+    logger.debug(f"Loading AFM file(s): {[p.name for p in paths]} with channel: {channel}")
     # Create a loader instance for the first file path using AFMReader's general_loader
     loader = general_loader.LoadFile(paths[0], None)
+    logger.debug(f"Loader created")
     loading_widget = LoadingWidget(current_viewer())
     loading_widget.start(f"Opening {paths[0].stem}.")
+    logger.debug(f"Loading widget started")
     try:
         # Get any additional required parameters for loading the file from the loader
         additional_params = loader.get_additional_params()
     finally:
         loading_widget.stop()
-
+    logger.debug(f"Additional params: {additional_params}")
     if additional_params:
         dialog = DynamicKwargsDialog(additional_params, filename=paths[0].name)
 
@@ -168,9 +175,11 @@ def reader_function(path, channel=None):
     viewer = current_viewer()
     if viewer is None:
         logger.error("Could not find current viewer")
-    elif "Change channel" not in viewer.window.dock_widgets:
-        image_options_widget = ImageOptions(viewer)
-        viewer.window.add_dock_widget(image_options_widget, name="Change channel")
+    else:
+        connect_layer_cleanup(viewer)
+        if "Change channel" not in viewer.window.dock_widgets:
+            image_options_widget = ImageOptions(viewer)
+            viewer.window.add_dock_widget(image_options_widget, name="Change channel")
 
     # Add kwargs to the the layer with metadata and scale
     add_kwargs = {
@@ -277,6 +286,50 @@ def update_image_options_widget():
     """Update the channel selector widget with the available channels for the currently selected layer."""
     if image_options_widget is not None:
         image_options_widget.get_loaded_data(None)
+
+
+def connect_layer_cleanup(viewer):
+    """Connect AFMReader lazy-file cleanup to a viewer layer list once."""
+    layer_list_id = id(viewer.layers)
+    if layer_list_id in layer_cleanup_connected_viewers:
+        return
+
+    # This is one viewer-level callback for all removed layers.
+    viewer.layers.events.removed.connect(close_unused_curves)
+    layer_cleanup_connected_viewers.add(layer_list_id)
+
+
+def close_unused_curves(event):
+    """Close curve data when the last layer for a loaded AFM image is removed."""
+    layer = getattr(event, "value", None)
+    metadata = getattr(layer, "metadata", {})
+    layer_id = metadata.get("afmreader_id") if metadata else None
+    if layer_id is None:
+        return
+
+    remaining_layers = getattr(event, "source", None)
+    if remaining_layers is None:
+        viewer = current_viewer()
+        remaining_layers = viewer.layers if viewer is not None else []
+
+    for remaining_layer in remaining_layers:
+        if remaining_layer is layer:
+            continue
+        remaining_metadata = getattr(remaining_layer, "metadata", {})
+        if remaining_metadata and remaining_metadata.get("afmreader_id") == layer_id:
+            return
+
+    loaded_image = get_loaded_image(layer_id)
+    if loaded_image is None or loaded_image.curves_data is None:
+        return
+
+    try:
+        loaded_image.curves_data.close()
+    except AttributeError:
+        logger.error(f"Curves data for loaded image {layer_id} does not have a close method.")
+        return
+
+    loaded_image.curves_data = None
 
 
 def get_loaded_image(layer_id: int | None):
