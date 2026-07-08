@@ -1,12 +1,18 @@
 """Use AFMReader to load Atomic Force Microscopy image files into Napari."""
 
-from pathlib import Path
+from __future__ import annotations
 
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any
+
+import napari
+import numpy as np
 from AFMReader import general_loader
-from AFMReader.data_classes import AFMLoad
+from AFMReader.data_classes import AFMLoad, CurvesDataset
 from loguru import logger
 from magicgui.widgets import Combobox, create_widget
-from napari import current_viewer  # pylint: disable=no-name-in-module
+from napari import Viewer, current_viewer  # pylint: disable=no-name-in-module
 from napari.layers import Image  # pylint: disable=no-name-in-module
 from napari_afmreader._alerts import LoadingWidget
 from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
@@ -21,15 +27,15 @@ from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
 
 # Global variable to give an id to each image layer loaded through this plugin
 afmreader_id = 0
-loaded_images = []
-image_options_widget = None
+loaded_images: list[LoadedImage] = []
+image_options_widget: ImageOptions | None = None
 
 # Set to keep track of viewers that have already connected the layer cleanup
 # callback to avoid duplicate connections between the potential for multiple viewers
-layer_cleanup_connected_viewers = set()
+layer_cleanup_connected_viewers: set[int] = set()
 
 
-def napari_get_reader(path: list | str):
+def napari_get_reader(path: list[str] | str):
     """
     Getter for the AFM file format reader.
 
@@ -73,7 +79,9 @@ def napari_get_reader(path: list | str):
     return reader_function
 
 
-def reader_function(path, channel=None):
+def reader_function(
+    path: str | list[str], channel: str | None = None
+) -> list[tuple[np.ndarray, dict[str, Any], str]] | None:
     """
     Read the AFM file formats.
 
@@ -91,25 +99,21 @@ def reader_function(path, channel=None):
         (data, metadata, layer_type="image"), where 'data' is a numpy array,
         'metadata' is a dict the filepath and pixel to nanometre scaling ratio.
     """
-    # pylint: disable=too-many-locals,global-statement
+    # pylint: disable=too-many-branches,too-many-locals,too-many-statements,global-statement
     # Global afmreader_id used to assign a unique id to each loaded image layer for tracking in the plugin
     global afmreader_id, image_options_widget
     # Handle both a string and a list of strings
-    paths = [Path(path)] if isinstance(path, str) else Path(path)
+    paths = [Path(path)] if isinstance(path, str) else [Path(p) for p in path]
 
-    logger.debug(f"Loading AFM file(s): {[p.name for p in paths]} with channel: {channel}")
     # Create a loader instance for the first file path using AFMReader's general_loader
     loader = general_loader.LoadFile(paths[0], None)
-    logger.debug(f"Loader created")
     loading_widget = LoadingWidget(current_viewer())
     loading_widget.start(f"Opening {paths[0].stem}.")
-    logger.debug(f"Loading widget started")
     try:
         # Get any additional required parameters for loading the file from the loader
         additional_params = loader.get_additional_params()
     finally:
         loading_widget.stop()
-    logger.debug(f"Additional params: {additional_params}")
     if additional_params:
         dialog = DynamicKwargsDialog(additional_params, filename=paths[0].name)
 
@@ -206,7 +210,7 @@ class DynamicKwargsDialog(QDialog):  # pylint: disable=too-few-public-methods
         The parent widget for the dialog.
     """
 
-    def __init__(self, required_kwargs, filename, parent=None):
+    def __init__(self, required_kwargs: dict[str, Any], filename: str, parent: QWidget | None = None) -> None:
         """
         Initialize the dialog with dynamic input fields based on required kwargs.
 
@@ -223,7 +227,7 @@ class DynamicKwargsDialog(QDialog):  # pylint: disable=too-few-public-methods
         super().__init__(parent)
         self.setWindowTitle(f"Enter Required Parameters for {filename}")
         self.setLayout(QVBoxLayout())
-        self.widgets = {}
+        self.widgets: dict[str, tuple[QWidget, Any]] = {}
 
         # Build the UI dynamically
         for name, arg_type in required_kwargs.items():
@@ -255,7 +259,7 @@ class DynamicKwargsDialog(QDialog):  # pylint: disable=too-few-public-methods
         self.button_box.rejected.connect(self.reject)
         self.layout().addWidget(self.button_box)
 
-    def get_values(self):
+    def get_values(self) -> dict[str, Any]:
         """
         Extract values from the widgets, converting to the appropriate types.
 
@@ -264,7 +268,7 @@ class DynamicKwargsDialog(QDialog):  # pylint: disable=too-few-public-methods
         dict
             A dictionary of parameter names and their corresponding values.
         """
-        results = {}
+        results: dict[str, Any] = {}
         for name, (widget, arg_type) in self.widgets.items():
             # Access the native widget if it's a magicgui wrapper
             # If it's already a native widget, getattr returns widget itself
@@ -288,8 +292,15 @@ def update_image_options_widget():
         image_options_widget.get_loaded_data(None)
 
 
-def connect_layer_cleanup(viewer):
-    """Connect AFMReader lazy-file cleanup to a viewer layer list once."""
+def connect_layer_cleanup(viewer: Viewer):
+    """
+    Connect AFMReader lazy-file cleanup to a viewer layer list once.
+
+    Parameters
+    ----------
+    viewer : Viewer
+        The napari viewer whose layer list should be monitored for removals.
+    """
     layer_list_id = id(viewer.layers)
     if layer_list_id in layer_cleanup_connected_viewers:
         return
@@ -300,7 +311,14 @@ def connect_layer_cleanup(viewer):
 
 
 def close_unused_curves(event):
-    """Close curve data when the last layer for a loaded AFM image is removed."""
+    """
+    Close curve data when the last layer for a loaded AFM image is removed.
+
+    Parameters
+    ----------
+    event : Event
+        The napari layer removal event containing the removed layer.
+    """
     layer = getattr(event, "value", None)
     metadata = getattr(layer, "metadata", {})
     layer_id = metadata.get("afmreader_id") if metadata else None
@@ -332,7 +350,7 @@ def close_unused_curves(event):
     loaded_image.curves_data = None
 
 
-def get_loaded_image(layer_id: int | None):
+def get_loaded_image(layer_id: int | None) -> LoadedImage | None:
     """
     Retrieve the LoadedImage instance associated with the given layer ID.
 
@@ -378,13 +396,20 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
     """
 
     # pylint: disable=too-many-positional-arguments
-    def __init__(self, loader, layer_id, available_channels=None, required_kwargs=None, flip_image: bool = True):
+    def __init__(
+        self,
+        loader: general_loader.LoadFile,
+        layer_id: int,
+        available_channels: Iterable[str] | dict[str, Any] | None = None,
+        required_kwargs: dict[str, Any] | None = None,
+        flip_image: bool = True,
+    ):
         """
         Initialize the LoadedImage instance.
 
         Parameters
         ----------
-        loader : object
+        loader : general_loader.LoadFile
             The loader object used to load image data.
         layer_id : int
             The ID of the layer associated with this loaded image.
@@ -395,19 +420,82 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         flip_image : bool, optional
             Whether to flip the image vertically when loading. Defaults to True.
         """
-        self.loader = loader
+        self.loader: general_loader.LoadFile = loader
+        self.viewer: Viewer | None = current_viewer()
+
         # Set layer id (used for tracking in loaded images)
-        self.layer_id = layer_id
-        self.init_from_loader(
-            available_channels=available_channels, required_kwargs=required_kwargs, flip_image=flip_image
+        self.layer_id: int = layer_id
+        self.path: Path = self.loader.filepath
+        self.flip_image: bool = flip_image
+        self.loading_widget: LoadingWidget = LoadingWidget(self.viewer)
+        self.available_channels: list[str] | None = self.fetch_available_channels(
+            available_channels=available_channels, headless=True
         )
 
-    def init_from_loader(self, available_channels=None, required_kwargs=None, flip_image: bool = True, headless=False):
+        # Initialize state variables for the LoadedImage instance
+        self.current_channel: str | None = None
+        self.image_channels: dict[str, AFMLoad] = {}
+        self.curves_data: CurvesDataset | None = None
+        self.required_kwargs: dict[str, Any] | None = required_kwargs
+
+    def init_from_loader(
+        self,
+        available_channels: Iterable[str] | dict[str, Any] | None = None,
+        required_kwargs: dict[str, Any] | None = None,
+        flip_image: bool = True,
+        headless: bool = False,
+    ):
+        """
+        Initialise image state from the AFMReader loader.
+
+        This allows the LoadedImage instance to be re-initialized with a new loader, without recreating
+        the whole object.
+
+        Parameters
+        ----------
+        available_channels : Iterable of str or dict of str to Any, optional
+            Available channel names or a mapping of channel metadata.
+        required_kwargs : dict, optional
+            Additional keyword arguments required when loading image data.
+        flip_image : bool, optional
+            Whether to flip the image vertically when loading.
+        headless : bool, optional
+            Whether to suppress loading widget updates.
+        """
         # Get relevant information from the loader to initialize the LoadedImage instance
         self.path = self.loader.filepath
-        self.viewer = current_viewer()
         self.flip_image = flip_image
         self.loading_widget = LoadingWidget(self.viewer)
+        self.available_channels = self.fetch_available_channels(
+            available_channels=available_channels, headless=headless
+        )
+
+        # Initialize state variables for the LoadedImage instance
+        self.current_channel: str | None = None
+        self.image_channels: dict[str, AFMLoad] = {}
+        self.curves_data: CurvesDataset | None = None
+        self.required_kwargs: dict[str, Any] | None = required_kwargs
+
+    def fetch_available_channels(
+        self,
+        available_channels: Iterable[str] | dict[str, Any] | None = None,
+        headless: bool = False,
+    ) -> list[str]:
+        """
+        Fetch available channels from the AFMReader loader.
+
+        Parameters
+        ----------
+        available_channels : Iterable of str or dict of str to Any, optional
+            Available channel names or a mapping of channel metadata.
+        headless : bool, optional
+            Whether to suppress loading widget updates.
+
+        Returns
+        -------
+        list of str
+            A list of available channel names.
+        """
         if not headless:
             self.loading_widget.start(f"Fetching channels from {self.path.stem}.")
         try:
@@ -417,26 +505,23 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         finally:
             if not headless:
                 self.loading_widget.stop()
-        self.available_channels = (
+
+        return (
             list(self.available_channels.keys())
             if isinstance(self.available_channels, dict)
             else list(self.available_channels)
         )
 
-        # Initialize state variables for the LoadedImage instance
-        self.current_channel = None
-        self.image_channels: dict[str, AFMLoad] = {}
-        self.curves_data = None
-        self.required_kwargs = required_kwargs
-
-    def add_channel_image(self, channel, headless=False):
+    def add_channel_image(self, channel: str | None, headless: bool = False):
         """
         Load the specified channel's image data and store it along with metadata.
 
         Parameters
         ----------
-        channel : str
+        channel : str or None
             The name of the channel to load.
+        headless : bool, optional
+            Whether to suppress loading widget updates.
         """
         if self.viewer is None:
             self.viewer = current_viewer()
@@ -456,10 +541,11 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
 
         if loaded_data.curves_dataset is not None:
             self.curves_data = loaded_data.curves_dataset
+            loaded_data.curves_dataset = None
 
         self.image_channels[channel] = loaded_data
 
-    def add_custom_channel(self, channel_name, image_data, z_units=None):
+    def add_custom_channel(self, channel_name: str, image_data: np.ndarray, z_units: str | None = None):
         """
         Add a custom channel with the specified name and image data.
 
@@ -480,14 +566,15 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             else (self.image_channels[self.current_channel].z_units if self.current_channel else None)
         )
         px2nm = self.image_channels[self.current_channel].px2nm if self.current_channel else 1
+        # pylint: disable-next=fixme
         # TODO do we want to add all the other parameters like timestamps, metadata, curves_dataset?
-        # May lead to large memory usage? however alligns with the rest of the current channels
+        # May lead to large memory usage? however aligns with the rest of the current channels
         self.image_channels[channel_name] = AFMLoad(image=image_data, px2nm=px2nm, z_units=z_units)
         if channel_name not in self.available_channels:
             self.available_channels.append(channel_name)
         update_image_options_widget()
 
-    def get_available_channels(self):
+    def get_available_channels(self) -> list[str]:
         """
         Get the available channels for this image.
 
@@ -498,7 +585,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         """
         return self.available_channels
 
-    def select_channel_image(self, channel):
+    def select_channel_image(self, channel: str, headless: bool = False):
         """
         Set the current channel's image data.
 
@@ -506,12 +593,14 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         ----------
         channel : str
             The name of the channel to display.
+        headless : bool, optional
+            Whether to skip viewer lookup when no viewer is already set.
         """
-        if not self.viewer:
+        if not self.viewer and not headless:
             self.viewer = current_viewer()
         self.current_channel = channel
 
-    def get_map(self, channel=None):
+    def get_map(self, channel: str | None = None) -> tuple[np.ndarray | None, float | None, str | None]:
         """
         Get the image data for the specified channel, loading it if it hasn't been loaded yet.
 
@@ -533,7 +622,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         return_z_units = self.image_channels[channel].z_units if channel in self.image_channels else None
         return return_image, return_px2nm, return_z_units
 
-    def get_image_data(self, channel=None):
+    def get_image_data(self, channel: str | None = None) -> tuple[np.ndarray, dict[str, Any], float]:
         """
         Retrieve the image data and metadata for the specified channel.
 
@@ -575,7 +664,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             self.image_channels[channel].px2nm,
         )
 
-    def set_required_kwargs(self, required_kwargs):
+    def set_required_kwargs(self, required_kwargs: dict[str, Any]):
         """
         Set the required kwargs for loading the image data.
 
@@ -586,7 +675,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         """
         self.required_kwargs = required_kwargs
 
-    def get_current_channel(self):
+    def get_current_channel(self) -> str:
         """
         Get the name of the currently selected channel.
 
@@ -597,7 +686,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         """
         return self.current_channel
 
-    def get_current_load(self):
+    def get_current_load(self) -> AFMLoad | None:
         """
         Get the AFMLoad instance for the currently selected channel.
 
@@ -621,7 +710,7 @@ class ImageOptions(QWidget):
         The napari viewer instance to interact with.
     """
 
-    def __init__(self, viewer):
+    def __init__(self, viewer: Viewer):
         """
         Initialize the ImageOptions widget.
 
@@ -640,11 +729,11 @@ class ImageOptions(QWidget):
         self.layout().addWidget(self.label)
 
         # Initialize state variables
-        self.selected_channel = None
-        self.available_channels = []
-        self.loaded_image = None
+        self.selected_channel: str | None = None
+        self.available_channels: list[str] = []
+        self.loaded_image: LoadedImage | None = None
         self.channel_selector = QComboBox()
-        self.selected_layer = None
+        self.selected_layer: napari.layers.Layer | None = None
 
         # Call get_loaded_data once to initialize the widget based on the current
         # selection (if any) when the widget is created
@@ -725,7 +814,7 @@ class ImageOptions(QWidget):
         else:
             logger.debug("Selected layer is None, cannot update layer.")
 
-    def set_channel(self, text):
+    def set_channel(self, text: str):
         """
         Set the selected channel and update the layer.
 
