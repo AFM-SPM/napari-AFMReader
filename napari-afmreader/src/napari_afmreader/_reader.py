@@ -21,7 +21,7 @@ from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QDialogButtonBox,
     QInputDialog,
     QLabel,
-    QVBoxLayout,
+    QHBoxLayout,
     QWidget,
 )
 
@@ -721,7 +721,7 @@ class ImageOptions(QWidget):
         """
         super().__init__()
         self.viewer = viewer
-        self.setLayout(QVBoxLayout())
+        self.setLayout(QHBoxLayout())
         self.label = QLabel("Select a layer loaded with afmreader plugin to view available channels")
 
         # Allow the label text to wrap if it's too long
