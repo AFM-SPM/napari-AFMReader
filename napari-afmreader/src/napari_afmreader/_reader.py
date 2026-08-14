@@ -19,9 +19,10 @@ from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QHBoxLayout,
     QInputDialog,
     QLabel,
-    QHBoxLayout,
+    QVBoxLayout,
     QWidget,
 )
 
