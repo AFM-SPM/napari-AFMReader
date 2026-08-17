@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +14,7 @@ from loguru import logger
 from magicgui.widgets import Combobox, create_widget
 from napari import Viewer, current_viewer  # pylint: disable=no-name-in-module
 from napari.layers import Image  # pylint: disable=no-name-in-module
+from napari.utils.events import Event
 from napari_afmreader._alerts import LoadingWidget
 from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QComboBox,
@@ -35,8 +36,11 @@ image_options_widget: ImageOptions | None = None
 # callback to avoid duplicate connections between the potential for multiple viewers
 layer_cleanup_connected_viewers: set[int] = set()
 
+LayerData = list[tuple[np.ndarray, dict[str, Any], str]] | None
+ReaderFunction = Callable[..., LayerData]
 
-def napari_get_reader(path: list[str] | str):
+
+def napari_get_reader(path: list[str] | str) -> ReaderFunction | None:
     """
     Getter for the AFM file format reader.
 
@@ -82,7 +86,7 @@ def napari_get_reader(path: list[str] | str):
 
 def reader_function(
     path: str | list[str], channel: str | None = None
-) -> list[tuple[np.ndarray, dict[str, Any], str]] | None:
+) -> LayerData:
     """
     Read the AFM file formats.
 
@@ -311,7 +315,7 @@ def connect_layer_cleanup(viewer: Viewer):
     layer_cleanup_connected_viewers.add(layer_list_id)
 
 
-def close_unused_curves(event):
+def close_unused_curves(event: Event):
     """
     Close curve data when the last layer for a loaded AFM image is removed.
 
@@ -676,14 +680,14 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         """
         self.required_kwargs = required_kwargs
 
-    def get_current_channel(self) -> str:
+    def get_current_channel(self) -> str | None:
         """
         Get the name of the currently selected channel.
 
         Returns
         -------
-        str
-            The name of the currently selected channel.
+        str or None
+            The name of the currently selected channel, or None if no channel has been selected.
         """
         return self.current_channel
 
@@ -746,7 +750,7 @@ class ImageOptions(QWidget):
         # Run get_loaded_data whenever the layer selection changes in the viewer to update the available channels
         viewer.layers.selection.events.connect(self.get_loaded_data)
 
-    def get_loaded_data(self, event):
+    def get_loaded_data(self, event: Event | None):
         """
         Get the currently selected layer in the viewer and update the channel selector.
 

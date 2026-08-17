@@ -1,6 +1,8 @@
 """Module used for providing error alerts in the gui and show/ handle loading messages."""
 
+from napari import Viewer
 from qtpy.QtCore import Qt
+from qtpy.QtGui import QResizeEvent
 from qtpy.QtWidgets import (
     QApplication,
     QLabel,
@@ -9,7 +11,7 @@ from qtpy.QtWidgets import (
 )
 
 
-def _viewer_window_widget(viewer):
+def _viewer_window_widget(viewer: Viewer | None) -> QWidget | None:
     """
     Return the napari Qt main window widget, if one is available.
 
@@ -41,7 +43,7 @@ class LoadingWidget(QWidget):
         The napari viewer instance to attach the overlay to.
     """
 
-    def __init__(self, viewer):
+    def __init__(self, viewer: Viewer | None):
         """
         Initialize the LoadingWidget.
 
@@ -96,7 +98,7 @@ class LoadingWidget(QWidget):
 
         self.hide()
 
-    def start(self, message="Loading"):
+    def start(self, message: str = "Loading"):
         """
         Show the dialog with a message.
 
@@ -130,7 +132,7 @@ class LoadingWidget(QWidget):
         self.hide()
         QApplication.processEvents()
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QResizeEvent):
         """
         Keep overlay covering the parent when window resizes.
 
