@@ -75,6 +75,7 @@ def napari_get_reader(path: list[str] | str) -> ReaderFunction | None:
             ".h5-jpk",
             ".jpk-qi-image",
             ".jpk-qi-data",
+            ".jpk-force-map",
             ".bin",
         )
     ):
