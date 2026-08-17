@@ -137,7 +137,7 @@ def reader_function(
     if channel:
         # No need to prompt user to select a channel, load the specified channel directly
         loaded_image = LoadedImage(loader, afmreader_id, required_kwargs=additional_params)
-        image, metadata, px2nm = loaded_image.get_image_data(channel=channel)
+        image, metadata, pixel_to_nanometre_scaling = loaded_image.get_image_data(channel=channel)
     else:
         # If a channel isn't selected, open an input dialog so the user can select one
         loading_widget.start(f"Fetching channels from {paths[0].stem} and processing parameters.")
@@ -171,10 +171,10 @@ def reader_function(
                 return None
 
             # Load the image data for the selected channel using the get_image_data method of the LoadedImage instance
-            image, metadata, px2nm = loaded_image.get_image_data(user_input)
+            image, metadata, pixel_to_nanometre_scaling = loaded_image.get_image_data(user_input)
         else:
             # If no channels are available, no need to ask the user to select a channel, load the image data directly
-            image, metadata, px2nm = loaded_image.get_image_data()
+            image, metadata, pixel_to_nanometre_scaling = loaded_image.get_image_data()
 
     # Add the loaded image to the list and update the running id
     loaded_images.append(loaded_image)
@@ -193,7 +193,7 @@ def reader_function(
     # Add kwargs to the the layer with metadata and scale
     add_kwargs = {
         "metadata": metadata,
-        "scale": [px2nm, px2nm],
+        "scale": [pixel_to_nanometre_scaling, pixel_to_nanometre_scaling],
     }
     layer_type = "image"
 
@@ -570,11 +570,17 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
             if z_units is not None
             else (self.image_channels[self.current_channel].z_units if self.current_channel else None)
         )
-        px2nm = self.image_channels[self.current_channel].px2nm if self.current_channel else 1
+        pixel_to_nanometre_scaling = (
+            self.image_channels[self.current_channel].pixel_to_nanometre_scaling if self.current_channel else 1
+        )
         # pylint: disable-next=fixme
         # TODO do we want to add all the other parameters like timestamps, metadata, curves_dataset?
         # May lead to large memory usage? however aligns with the rest of the current channels
-        self.image_channels[channel_name] = AFMLoad(image=image_data, px2nm=px2nm, z_units=z_units)
+        self.image_channels[channel_name] = AFMLoad(
+            image=image_data,
+            pixel_to_nanometre_scaling=pixel_to_nanometre_scaling,
+            z_units=z_units,
+        )
         if channel_name not in self.available_channels:
             self.available_channels.append(channel_name)
         update_image_options_widget()
@@ -623,9 +629,11 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         if channel not in self.image_channels and (channel is not None or "default" not in self.image_channels):
             self.add_channel_image(channel)
         return_image = self.image_channels[channel].image if channel in self.image_channels else None
-        return_px2nm = self.image_channels[channel].px2nm if channel in self.image_channels else None
+        pixel_to_nanometre_scaling = (
+            self.image_channels[channel].pixel_to_nanometre_scaling if channel in self.image_channels else None
+        )
         return_z_units = self.image_channels[channel].z_units if channel in self.image_channels else None
-        return return_image, return_px2nm, return_z_units
+        return return_image, pixel_to_nanometre_scaling, return_z_units
 
     def get_image_data(self, channel: str | None = None) -> tuple[np.ndarray, dict[str, Any], float]:
         """
@@ -656,7 +664,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         # Construct metadata dictionary for the layer.
         metadata = {
             "image_path": self.path,
-            "px2nm": self.image_channels[channel].px2nm,
+            "px2nm": self.image_channels[channel].pixel_to_nanometre_scaling,
             "channel": channel,
             "afmreader_id": self.layer_id,
             "available_channels": self.available_channels,
@@ -666,7 +674,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         return (
             self.image_channels[channel].image,
             metadata,
-            self.image_channels[channel].px2nm,
+            self.image_channels[channel].pixel_to_nanometre_scaling,
         )
 
     def set_required_kwargs(self, required_kwargs: dict[str, Any]):
