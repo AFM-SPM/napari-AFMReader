@@ -23,6 +23,7 @@ from qtpy.QtWidgets import (  # pylint: disable = no-name-in-module
     QHBoxLayout,
     QInputDialog,
     QLabel,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -735,26 +736,38 @@ class ImageOptions(QWidget):
         """
         super().__init__()
         self.viewer = viewer
-        self.setLayout(QHBoxLayout())
+        layout = QHBoxLayout(self)
         self.label = QLabel("Select a layer loaded with afmreader plugin to view available channels")
 
-        # Allow the label text to wrap if it's too long
+        # Keep long layer names readable without allowing this compact dock widget
+        # to grow vertically beyond two lines of text.
         self.label.setWordWrap(True)
-        self.layout().addWidget(self.label)
+        self.label.setMaximumHeight(self.label.fontMetrics().lineSpacing() * 2)
+        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        layout.addWidget(self.label)
+        layout.addStretch()
 
         # Initialize state variables
         self.selected_channel: str | None = None
         self.available_channels: list[str] = []
         self.loaded_image: LoadedImage | None = None
         self.channel_selector = QComboBox()
+        self.channel_selector.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.selected_layer: napari.layers.Layer | None = None
 
         # Call get_loaded_data once to initialize the widget based on the current
         # selection (if any) when the widget is created
         self.get_loaded_data(None)
 
-        self.layout().addWidget(self.channel_selector)
+        layout.addWidget(self.channel_selector)
         self.channel_selector.currentTextChanged.connect(self.set_channel)
+
+        # The contents only need a single control row (or at most two wrapped
+        # label lines), so do not consume otherwise unused dock height.
+        content_height = max(self.label.maximumHeight(), self.channel_selector.sizeHint().height())
+        margins = layout.contentsMargins()
+        self.setMaximumHeight(content_height + margins.top() + margins.bottom())
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
         # Run get_loaded_data whenever the layer selection changes in the viewer to update the available channels
         viewer.layers.selection.events.connect(self.get_loaded_data)
@@ -779,7 +792,9 @@ class ImageOptions(QWidget):
             return
 
         # Update the label to show which layer is selected
-        self.label.setText(f"Change channel for layer '{self.selected_layer.name}'")
+        label_text = f"Change channel for layer '{self.selected_layer.name}'"
+        self.label.setText(label_text)
+        self.label.setToolTip(label_text)
         current_id = self.selected_layer.metadata.get("afmreader_id")
 
         if current_id is not None:
