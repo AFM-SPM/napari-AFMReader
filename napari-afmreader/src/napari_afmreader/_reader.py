@@ -198,8 +198,15 @@ def reader_function(
     add_kwargs = {
         "metadata": metadata,
         "scale": [pixel_to_nanometre_scaling, pixel_to_nanometre_scaling],
+        "units": ["nm", "nm"],
     }
     layer_type = "image"
+
+    # Scalebar
+    viewer.canvas.overlays.scale_bar.visible = True
+    viewer.canvas.overlays.scale_bar.colored = False
+    viewer.canvas.overlays.scale_bar.box = True
+    viewer.canvas.overlays.scale_bar.position = "bottom_right"
 
     # Return layer data to napari
     return [(image, add_kwargs, layer_type)]
@@ -429,7 +436,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         flip_image : bool, optional
             Whether to flip the image vertically when loading. Defaults to True.
         """
-
         from AFMReader import general_loader
         self.loader: general_loader.LoadFile = loader
         self.viewer: Viewer | None = current_viewer()
