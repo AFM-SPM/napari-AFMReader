@@ -8,6 +8,7 @@ from typing import Any
 
 import napari
 import numpy as np
+from AFMReader import general_loader
 from AFMReader.data_classes import AFMLoad, CurvesDataset
 from loguru import logger
 from magicgui.widgets import Combobox, create_widget
@@ -110,9 +111,6 @@ def reader_function(
     global afmreader_id, image_options_widget
     # Handle both a string and a list of strings
     paths = [Path(path)] if isinstance(path, str) else [Path(p) for p in path]
-    
-    # Import the general_loader from AFMReader
-    from AFMReader import general_loader
 
     # Create a loader instance for the first file path using AFMReader's general_loader
     loader = general_loader.LoadFile(paths[0], None)
@@ -436,7 +434,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         flip_image : bool, optional
             Whether to flip the image vertically when loading. Defaults to True.
         """
-        from AFMReader import general_loader
         self.loader: general_loader.LoadFile = loader
         self.viewer: Viewer | None = current_viewer()
 
