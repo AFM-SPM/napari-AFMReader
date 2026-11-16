@@ -8,7 +8,8 @@ from typing import Any
 
 import napari
 import numpy as np
-from AFMReader.data_classes import AFMLoad, CurvesDataset
+from AFMReader import general_loader
+from AFMReader.data_classes import AFMScan, CurvesDataset
 from loguru import logger
 from magicgui.widgets import Combobox, create_widget
 from napari import Viewer, current_viewer  # pylint: disable=no-name-in-module
@@ -110,9 +111,6 @@ def reader_function(
     global afmreader_id, image_options_widget
     # Handle both a string and a list of strings
     paths = [Path(path)] if isinstance(path, str) else [Path(p) for p in path]
-    
-    # Import the general_loader from AFMReader
-    from AFMReader import general_loader
 
     # Create a loader instance for the first file path using AFMReader's general_loader
     loader = general_loader.LoadFile(paths[0], None)
@@ -198,8 +196,15 @@ def reader_function(
     add_kwargs = {
         "metadata": metadata,
         "scale": [pixel_to_nanometre_scaling, pixel_to_nanometre_scaling],
+        "units": ["nm", "nm"],
     }
     layer_type = "image"
+
+    # Scalebar
+    viewer.canvas.overlays.scale_bar.visible = True
+    viewer.canvas.overlays.scale_bar.colored = False
+    viewer.canvas.overlays.scale_bar.box = True
+    viewer.canvas.overlays.scale_bar.position = "bottom_right"
 
     # Return layer data to napari
     return [(image, add_kwargs, layer_type)]
@@ -429,8 +434,6 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         flip_image : bool, optional
             Whether to flip the image vertically when loading. Defaults to True.
         """
-
-        from AFMReader import general_loader
         self.loader: general_loader.LoadFile = loader
         self.viewer: Viewer | None = current_viewer()
 
@@ -445,7 +448,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
 
         # Initialize state variables for the LoadedImage instance
         self.current_channel: str | None = None
-        self.image_channels: dict[str, AFMLoad] = {}
+        self.image_channels: dict[str, AFMScan] = {}
         self.curves_data: CurvesDataset | None = None
         self.required_kwargs: dict[str, Any] | None = required_kwargs
 
@@ -483,7 +486,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
 
         # Initialize state variables for the LoadedImage instance
         self.current_channel: str | None = None
-        self.image_channels: dict[str, AFMLoad] = {}
+        self.image_channels: dict[str, AFMScan] = {}
         self.curves_data: CurvesDataset | None = None
         self.required_kwargs: dict[str, Any] | None = required_kwargs
 
@@ -582,7 +585,7 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         # pylint: disable-next=fixme
         # TODO do we want to add all the other parameters like timestamps, metadata, curves_dataset?
         # May lead to large memory usage? however aligns with the rest of the current channels
-        self.image_channels[channel_name] = AFMLoad(
+        self.image_channels[channel_name] = AFMScan(
             image=image_data,
             pixel_to_nanometre_scaling=pixel_to_nanometre_scaling,
             z_units=z_units,
@@ -705,14 +708,14 @@ class LoadedImage:  # pylint: disable=too-many-instance-attributes
         """
         return self.current_channel
 
-    def get_current_load(self) -> AFMLoad | None:
+    def get_current_load(self) -> AFMScan | None:
         """
-        Get the AFMLoad instance for the currently selected channel.
+        Get the AFMScan instance for the currently selected channel.
 
         Returns
         -------
-        AFMLoad
-            The AFMLoad instance for the currently selected channel.
+        AFMScan
+            The AFMScan instance for the currently selected channel.
         """
         if self.current_channel in self.image_channels:
             return self.image_channels[self.current_channel]
