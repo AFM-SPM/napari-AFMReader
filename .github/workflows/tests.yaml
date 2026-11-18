@@ -40,6 +40,11 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set up display and OpenGL
+        uses: pyvista/setup-headless-display-action@v5
+        with:
+          qt: true
+          pyvista: false
       - name: Upgrade pip and install test dependencies
         run: |
           pip install --upgrade virtualenv
