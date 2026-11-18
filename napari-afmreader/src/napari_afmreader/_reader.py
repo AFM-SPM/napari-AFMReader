@@ -86,9 +86,7 @@ def napari_get_reader(path: list[str] | str) -> ReaderFunction | None:
     return reader_function
 
 
-def reader_function(
-    path: str | list[str], channel: str | None = None
-) -> LayerData:
+def reader_function(path: str | list[str], channel: str | None = None) -> LayerData:
     """
     Read the AFM file formats.
 
