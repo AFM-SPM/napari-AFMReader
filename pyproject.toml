@@ -58,7 +58,7 @@ tests = [
   "pytest-cov",
   "pytest-qt",
   "qtpy",
-  "pyqt5",
+  "pyqt6",
 ]
 dev = [
   "black",
