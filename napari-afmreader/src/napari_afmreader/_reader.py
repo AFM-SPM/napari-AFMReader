@@ -190,7 +190,7 @@ def reader_function(
         connect_layer_cleanup(viewer)
         if "Change channel" not in viewer.window.dock_widgets:
             image_options_widget = ImageOptions(viewer)
-            viewer.window.add_dock_widget(image_options_widget, name="Change channel")
+            viewer.window.add_dock_widget(image_options_widget, name="Change channel", area="left")
 
     # Add kwargs to the the layer with metadata and scale
     add_kwargs = {
