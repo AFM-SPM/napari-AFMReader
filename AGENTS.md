@@ -25,7 +25,7 @@ If you think reverting the change is the best solution, you absolutely **must** 
 
 ## Coding Style & Naming Conventions
 
-Code is formatted with Black using a 120-character line length. Ruff handles import ordering and lint fixes; Pylint is also run through pre-commit. Use 4-space indentation, clear snake_case names for functions and variables, and CapWords for classes. Keep internal modules consistent with the existing leading-underscore pattern, such as `_reader.py`. Tests should follow the `test_*.py` naming pattern enforced by pre-commit.
+Code is formatted with Black using a 120-character line length. Ruff handles import ordering and lint fixes; Pylint is also run through pre-commit. Use 4-space indentation, clear snake*case names for functions and variables, and CapWords for classes. Keep internal modules consistent with the existing leading-underscore pattern, such as `_reader.py`. Tests should follow the `test*\*.py` naming pattern enforced by pre-commit.
 
 ## Configuration & Assets
 
