@@ -8,7 +8,7 @@ data are in `_tests/_test_data/`. User-facing plugin guidance is maintained in `
 
 ## Build, Test, and Development Commands
 
-These commands should only be run when specifcally requested. Do not try and run the test suite unless we are working
+These commands should only be run when specifically requested. Do not try and run the test suite unless we are working
 on tests, the tests are a bit bad for this project and hence do little to help with development
 
 ```bash
@@ -22,7 +22,7 @@ napari
 ```
 
 This opens a gui app and can be used to test the application through the computer use tool (this is generally
-prefereable to running the test suite) however again this should not be done unless requested.
+preferable to running the test suite) however again this should not be done unless requested.
 
 Do not try and add commit or push requests unless specifically requested. If the code you have written has been changed
 when you got to edit it over what you were familiar with do not revert it, it has been changed for a reason.
