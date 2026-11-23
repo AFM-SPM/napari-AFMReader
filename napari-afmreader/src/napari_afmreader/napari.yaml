@@ -16,11 +16,17 @@ contributions:
       filename_patterns:
         [
           "*.asd",
+          "*.ardf",
           "*.gwy",
           "*.ibw",
           "*.jpk",
+          "*.jpk-qi-image",
+          "*.jpk-qi-data",
+          "*.jpk-force-map",
           "*.spm",
+          "*.h5-jpk",
           "*.stp",
           "*.top",
           "*.topostats",
+          "*.bin",
         ]

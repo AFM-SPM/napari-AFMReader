@@ -24,7 +24,6 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Image Processing",
@@ -34,11 +33,11 @@ keywords = [
   "image processing",
   "napari",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
-  "afmreader",
+  "AFMReader>=0.0.8",
   "magicgui",
-  "napari[all]",
+  "napari",
   "qtpy",
   "tox",
 ]
@@ -58,6 +57,7 @@ tests = [
   "pytest-cov",
   "pytest-qt",
   "qtpy",
+  "pyqt6",
 ]
 dev = [
   "black",
@@ -96,7 +96,7 @@ exclude = '''
   )/
 )
 '''
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py311', 'py312']
 
 [tool.codespell]
 skip = '*.top,*.spm,*.stp'
