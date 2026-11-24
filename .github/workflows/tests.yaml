@@ -35,7 +35,7 @@ jobs:
     # QT_OPENGL: software
     # XDG_RUNTIME_DIR: /tmp
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -60,7 +60,7 @@ jobs:
         run: |
           coverage xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

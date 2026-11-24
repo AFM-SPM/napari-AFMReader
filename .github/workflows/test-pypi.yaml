@@ -15,7 +15,7 @@ jobs:
     environment: test-pypi-publish
     name: Publish package to Test-PyPi
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Setup Python
