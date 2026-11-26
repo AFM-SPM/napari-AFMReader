@@ -56,11 +56,11 @@ jobs:
         run: |
           uv run pytest --cov=napari-afmreader/src --cov-branch --numprocesses=logical
       - name: Determine coverage
-        if: runner.os = 'Linux'
+        if: runner.os == 'Linux'
         run: |
           coverage xml
       - name: Upload coverage to Codecov
-        if: runner.os = 'Linux'
+        if: runner.os == 'Linux'
         uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
