@@ -51,26 +51,29 @@ dependencies = [
 [project.entry-points."napari.manifest"]
 napari-afmreader = "napari_afmreader:napari.yaml"
 
-[project.optional-dependencies]
+[dependency-groups]
 tests = [
   "pytest",
   "pytest-cov",
   "pytest-qt",
+  "pytest-xdist",
   "qtpy",
   "pyqt6",
 ]
+pypi = [
+  "build",
+  "setuptools_scm[toml]",
+  "wheel",
+]
 dev = [
+  {include-group = "tests"},
+  {include-group = "pypi"},
   "black",
   "codespell",
   "pre-commit",
   "pylint",
   "ruff",
   "pytest-testmon",
-]
-pypi = [
-  "build",
-  "setuptools_scm[toml]",
-  "wheel",
 ]
 
 [tool.setuptools]
