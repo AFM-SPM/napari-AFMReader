@@ -208,3 +208,6 @@ omit = [
   "*tests*",
   "**/__init__*",
 ]
+
+[tool.uv]
+exclude-newer = "6 days" # delay updating new packages to protect against supply chain vulnerabilities
