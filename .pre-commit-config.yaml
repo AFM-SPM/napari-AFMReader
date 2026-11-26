@@ -93,6 +93,10 @@ repos:
       - id: python-check-blanket-type-ignore
       - id: python-check-mock-methods
 
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.13.6
+    hooks:
+      - id: uv-lock
   - repo: local
     hooks:
       - id: pylint
